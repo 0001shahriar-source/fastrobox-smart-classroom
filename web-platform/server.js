@@ -180,6 +180,17 @@ app.post('/api/config', (req, res) => {
   res.json({ success: true, status: systemStatus });
 });
 
+// 8. Privacy Compliance: Purge all collected test logs & participant data after judging
+app.post('/api/purge-test-data', (req, res) => {
+  eventLog = [];
+  systemStatus.lastUid = '';
+  if (fs.existsSync(DB_FILE)) {
+    try { fs.unlinkSync(DB_FILE); } catch (e) {}
+  }
+  console.log('[PRIVACY] All test participants logs & records permanently deleted.');
+  res.json({ success: true, message: 'All test data and face records permanently wiped for privacy compliance.' });
+});
+
 app.listen(PORT, () => {
   console.log(`=======================================================`);
   console.log(` Smart Classroom Cloud Platform live on port ${PORT}`);

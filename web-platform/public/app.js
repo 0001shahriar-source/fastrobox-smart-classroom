@@ -179,6 +179,20 @@ async function saveConfiguration() {
   }
 }
 
+async function purgePrivacyData() {
+  if (confirm('Privacy Rule Compliance: Delete all collected test participant records and face logs?')) {
+    try {
+      const res = await fetch('/api/purge-test-data', { method: 'POST' });
+      const data = await res.json();
+      alert(data.message);
+      fetchStatus();
+      fetchEvents();
+    } catch (err) {
+      alert('Purge failed: ' + err.message);
+    }
+  }
+}
+
 // Initial Bootstrapping
 setInterval(fetchStatus, 1000);
 setInterval(fetchEvents, 3000);

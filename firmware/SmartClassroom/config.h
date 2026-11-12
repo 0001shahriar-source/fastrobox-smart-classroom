@@ -12,6 +12,7 @@ struct SystemConfig {
   char cloudApiUrl[128];     // Public HTTPS endpoint of web dashboard
   char apiKey[64];           // Dynamic API Token
   float tempThreshold;       // Temperature alarm threshold (°C)
+  unsigned long doorDuration; // Door unlock duration in ms
   bool configured;
 };
 
@@ -34,6 +35,7 @@ public:
     String cloudUrl = prefs.getString("cloudurl", "http://192.168.1.100:3000");
     String key = prefs.getString("apikey", "test-token");
     float tempThresh = prefs.getFloat("tempthresh", 45.0f);
+    unsigned long doorDur = prefs.getULong("doordur", 5000);
     bool isConfigured = prefs.getBool("configured", false);
 
     strncpy(currentConfig.wifiSsid, ssid.c_str(), sizeof(currentConfig.wifiSsid));
@@ -43,11 +45,17 @@ public:
     strncpy(currentConfig.cloudApiUrl, cloudUrl.c_str(), sizeof(currentConfig.cloudApiUrl));
     strncpy(currentConfig.apiKey, key.c_str(), sizeof(currentConfig.apiKey));
     currentConfig.tempThreshold = tempThresh;
+    currentConfig.doorDuration = doorDur;
     currentConfig.configured = isConfigured;
   }
 
   SystemConfig& get() {
     return currentConfig;
+  }
+
+  void saveDoorDuration(unsigned long durationMs) {
+    currentConfig.doorDuration = durationMs;
+    prefs.putULong("doordur", durationMs);
   }
 
   void saveWifi(const char* ssid, const char* pass) {

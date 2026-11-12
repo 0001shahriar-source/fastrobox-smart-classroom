@@ -60,10 +60,10 @@ public:
     }
   }
 
-  void unlock(unsigned long durationMs = 5000, bool emergency = false) {
+  void unlock(unsigned long durationMs = 0, bool emergency = false) {
     state = DOOR_UNLOCKED;
     unlockTimestamp = millis();
-    autoRelockDuration = durationMs;
+    autoRelockDuration = (durationMs > 0) ? durationMs : Config.get().doorDuration;
     emergencyOverride = emergency;
 
     if (!emergency) {

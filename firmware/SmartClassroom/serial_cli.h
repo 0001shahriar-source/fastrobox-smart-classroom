@@ -44,6 +44,7 @@ public:
     Serial.println(F("  SET_TIME:<HH:MM>            -> Set Class Start Time (e.g. 10:30)"));
     Serial.println(F("  SET_CLOUD:<url>             -> Set Public HTTPS Web Platform URL"));
     Serial.println(F("  SET_TEMP:<threshold>        -> Set Temperature Threshold (e.g. 40.0)"));
+    Serial.println(F("  SET_DOOR_TIME:<seconds>     -> Set Door Unlock Duration (e.g. 3 or 8)"));
     Serial.println(F("  UNLOCK                      -> Unlock simulated door"));
     Serial.println(F("  LOCK                        -> Lock simulated door"));
     Serial.println(F("  STATUS                      -> Display live system status"));
@@ -107,6 +108,12 @@ public:
       float thresh = cmd.substring(9).toFloat();
       Config.saveTempThreshold(thresh);
       Serial.printf("[CONFIG] Temperature threshold updated to: %.1f C\n", thresh);
+    } else if (cmd.startsWith("SET_DOOR_TIME:")) {
+      int sec = cmd.substring(14).toInt();
+      if (sec > 0) {
+        Config.saveDoorDuration(sec * 1000UL);
+        Serial.printf("[CONFIG] Door auto-relock duration updated to: %d seconds\n", sec);
+      }
     } else if (cmd.equalsIgnoreCase("RESET")) {
       Config.resetDefaults();
       Serial.println(F("[CONFIG] All configurations reset to defaults."));
