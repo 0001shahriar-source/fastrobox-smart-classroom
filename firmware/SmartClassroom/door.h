@@ -145,3 +145,4 @@ public:
 extern SimulatedDoor Door;
 
 #endif // DOOR_H
+

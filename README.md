@@ -114,3 +114,4 @@ git push origin --tags
 File naming convention for submitted evidence:
 * Video: `<TeamID>_L<NN>_video.mp4`
 * Write-up: `<TeamID>_L<NN>_writeup.pdf`
+

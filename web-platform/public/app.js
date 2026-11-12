@@ -184,3 +184,4 @@ setInterval(fetchStatus, 1000);
 setInterval(fetchEvents, 3000);
 fetchStatus();
 fetchEvents();
+

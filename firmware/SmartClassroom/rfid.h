@@ -106,3 +106,4 @@ public:
 extern RfidManager Rfid;
 
 #endif // RFID_HANDLER_H
+

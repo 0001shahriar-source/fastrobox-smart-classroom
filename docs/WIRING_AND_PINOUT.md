@@ -63,3 +63,4 @@ Since only jumper wires are allowed and no breadboard is permitted:
   - **Buzzer:** 1 short beep on Student Unlock, 2 beeps on Lock, Continuous siren on Fire/Panic.
   - **Local Status Webpage:** Real-time visual lock icon and badge.
   - **Cloud Dashboard:** Live toggle switch and animated door badge.
+

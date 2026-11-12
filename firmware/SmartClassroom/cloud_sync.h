@@ -144,3 +144,4 @@ public:
 extern CloudSyncManager Cloud;
 
 #endif // CLOUD_SYNC_H
+

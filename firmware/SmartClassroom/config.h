@@ -89,3 +89,4 @@ public:
 extern ConfigManager Config;
 
 #endif // CONFIG_H
+

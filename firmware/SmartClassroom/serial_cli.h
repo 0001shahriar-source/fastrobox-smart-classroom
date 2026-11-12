@@ -119,3 +119,4 @@ public:
 extern SerialCli CLI;
 
 #endif // SERIAL_CLI_H
+

@@ -54,3 +54,4 @@
 *Additional resilience and edge-case handling built into this level:*
 * **Offline Event Buffering:** If the Wi-Fi connection drops, all security logs and attendance events are buffered in non-volatile storage (NVS/LittleFS) and automatically flushed to the live cloud database upon reconnection without data loss.
 * **Fail-Safe Door Release:** In the event of an emergency (flame or touch panic), the simulated door defaults to `UNLOCKED` automatically to ensure classroom evacuation safety.
+
