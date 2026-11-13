@@ -76,7 +76,7 @@ public:
       Serial.println(F("[CMD]   Dynamic setters: SET_WIFI:<ssid>,<pass>, SET_ROOM:<id>, SET_TIME:<HH:MM>, SET_TEMP:<thresh>, SET_DOOR_TIME:<sec>"));
     }
     else if (cmd.equalsIgnoreCase("beep")) {
-      Serial.println(F("[CMD] Testing Buzzer on GPIO 47 with dual High + 2700Hz Tone..."));
+      Serial.println(F("[CMD] Testing Buzzer on GPIO 2 with dual High + 2700Hz Tone..."));
       digitalWrite(BUZZER_PIN, HIGH);
       tone(BUZZER_PIN, 2700);
       delay(800);

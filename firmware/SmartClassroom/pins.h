@@ -18,7 +18,7 @@
 // --- Environmental & Safety Sensors ---
 #define DHT_PIN         14   // DHT11 Data Pin
 #define FLAME_PIN       21   // Flame Sensor Digital Output (Active LOW)
-#define BUZZER_PIN      47   // Active Buzzer (Active HIGH)
+#define BUZZER_PIN      2    // Buzzer on GPIO 2 (Active HIGH & 2.7kHz Tone drive)
 #define TOUCH_PANIC_PIN 1    // Capacitive Touch Panic Wire (GPIO 1 / Touch 1)
 
 // --- Onboard Peripherals ---

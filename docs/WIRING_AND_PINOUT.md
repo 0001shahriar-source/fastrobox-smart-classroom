@@ -26,7 +26,7 @@
 | **IR Flame Sensor**| DO (Digital Out)| **GPIO 21** | Digital Fire detect (Active LOW) |
 | **IR Flame Sensor**| VCC | 3.3V / 5V | Power |
 | **IR Flame Sensor**| GND | GND | Ground |
-| **Active Buzzer** | (+) Positive | **GPIO 47** | Active HIGH trigger for beep / alarm |
+| **Active Buzzer** | (+) Positive | **GPIO 2** | Active HIGH trigger for beep / alarm |
 | **Active Buzzer** | (-) Negative | GND | Ground |
 | **Touch Panic Wire**| Bare wire end | **GPIO 1** | ESP32-S3 Capacitive Touch Pin (Touch 1) |
 | **Onboard RGB LED**| Built-in | **GPIO 48 / RGB_BUILTIN** | WS2812 NeoPixel Status Light |
