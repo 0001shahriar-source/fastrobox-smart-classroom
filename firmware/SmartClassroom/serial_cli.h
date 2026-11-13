@@ -158,14 +158,14 @@ public:
         ssid.trim();
         pass.trim();
         Config.saveWifi(ssid.c_str(), pass.c_str());
-        Serial.printf("[CMD] SET_WIFI: Saved SSID '%s'. Connecting now...\n", ssid.c_str());
-        WiFi.disconnect(true);
-        delay(200);
-        WiFi.mode(WIFI_STA);
+        Serial.printf("[CMD] SET_WIFI: Saved SSID '%s'. Connecting to network...\n", ssid.c_str());
+        WiFi.disconnect(false);
+        delay(100);
+        WiFi.mode(WIFI_AP_STA); // Keep AP active while connecting to station
         WiFi.begin(ssid.c_str(), pass.c_str());
         unsigned long tStart = millis();
-        while (WiFi.status() != WL_CONNECTED && millis() - tStart < 8000) {
-          delay(300);
+        while (WiFi.status() != WL_CONNECTED && millis() - tStart < 15000) {
+          delay(500);
           Serial.print(".");
         }
         Serial.println();
@@ -174,7 +174,7 @@ public:
                         WiFi.localIP().toString().c_str(), WiFi.RSSI());
           Signals.setState(STATE_SAFE);
         } else {
-          Serial.println(F("[NET] Failed to connect. Check Wi-Fi SSID / Password."));
+          Serial.printf("[NET] Connection status: %d. Check if hotspot 2.4GHz is active.\n", WiFi.status());
         }
       } else {
         Serial.println(F("[CMD] Invalid format. Use: SET_WIFI:<ssid>,<pass>"));
