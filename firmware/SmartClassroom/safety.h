@@ -230,10 +230,10 @@ public:
     }
 
     // --- 2. Capacitive Touch Panic Pad ---
-    // Touching pad for 2 seconds raises PANIC; shorter than 1 second ignored
+    // Touching pad for 2 seconds raises PANIC; requires clear finger touch (50% drop below baseline)
     #if SOC_TOUCH_SENSOR_NUM > 0
     uint32_t touchVal = touchRead(TOUCH_PANIC_PIN);
-    bool touchDown = (touchBaseline > 0 && touchVal < (touchBaseline * 7 / 10)); // 30% drop
+    bool touchDown = (touchBaseline > 5000 && touchVal < (touchBaseline / 2)); // Strict 50% drop
     #else
     bool touchDown = false;
     #endif
