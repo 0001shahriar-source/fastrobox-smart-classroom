@@ -43,7 +43,13 @@ private:
   }
 
   void setBuzzer(bool on) {
-    digitalWrite(BUZZER_PIN, on ? HIGH : LOW);
+    if (on) {
+      digitalWrite(BUZZER_PIN, HIGH);
+      tone(BUZZER_PIN, 2700); // Drives both active and passive piezo buzzers strongly
+    } else {
+      noTone(BUZZER_PIN);
+      digitalWrite(BUZZER_PIN, LOW);
+    }
     buzzerPinState = on;
   }
 
