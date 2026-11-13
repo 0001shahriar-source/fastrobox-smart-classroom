@@ -57,7 +57,7 @@
 
 \section{2. Where It Shows}
 \noindent
-The following four display surfaces observed by judges verify operational compliance across this level:
+The following operational surfaces observed by judges verify compliance for Level 1:
 
 \vspace{2pt}
 \begin{figure}[ht!]
@@ -65,26 +65,26 @@ The following four display surfaces observed by judges verify operational compli
 \begin{minipage}{0.48\textwidth}
   \centering
   \includegraphics[width=\linewidth,height=3.6cm,keepaspectratio]{screenshots/serial_monitor.png}
-  \caption*{Surface 1: Serial Monitor (9600 Baud [STAT])}
+  \caption*{Surface 1: Serial Monitor 1s [STATUS] Line}
 \end{minipage}
 \hfill
 \begin{minipage}{0.48\textwidth}
   \centering
-  \includegraphics[width=\linewidth,height=3.6cm,keepaspectratio]{screenshots/local_page.png}
-  \caption*{Surface 2: Local Status Page (ESP32-S3 mDNS)}
+  \includegraphics[width=\linewidth,height=3.6cm,keepaspectratio]{screenshots/serial_tasks.png}
+  \caption*{Surface 2: Serial CLI `tasks` (Dual-Core Execution)}
 \end{minipage}
 
-\vspace{2pt}
+\vspace{3pt}
 \begin{minipage}{0.48\textwidth}
   \centering
-  \includegraphics[width=\linewidth,height=3.6cm,keepaspectratio]{screenshots/web_dashboard.png}
-  \caption*{Surface 3: Web Dashboard (Public HTTPS)}
+  \includegraphics[width=\linewidth,height=3.6cm,keepaspectratio]{screenshots/serial_health.png}
+  \caption*{Surface 3: Serial CLI `health` (240MHz CPU, Heap, Flash)}
 \end{minipage}
 \hfill
 \begin{minipage}{0.48\textwidth}
   \centering
-  \includegraphics[width=\linewidth,height=3.6cm,keepaspectratio]{screenshots/database_records.png}
-  \caption*{Surface 4: Database Audit Log Table}
+  \includegraphics[width=\linewidth,height=3.6cm,keepaspectratio]{screenshots/architecture_diagram.png}
+  \caption*{Surface 4: Dual-Core FreeRTOS Architecture}
 \end{minipage}
 \end{figure}
 

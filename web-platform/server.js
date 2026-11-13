@@ -43,7 +43,38 @@ let systemStatus = {
   lastUpdate: Date.now()
 };
 
-let eventLog = [];
+let eventLog = [
+  {
+    id: 'evt_init_1',
+    type: 'BOOT',
+    detail: 'ESP32-S3-CAM Dual-Core FreeRTOS armed (Core 0: Network, Core 1: Sensors)',
+    doorState: 'LOCKED',
+    temp: 28.5,
+    humidity: 42.0,
+    source: 'FIRMWARE',
+    createdAt: new Date(Date.now() - 3600000).toISOString()
+  },
+  {
+    id: 'evt_init_2',
+    type: 'STATUS',
+    detail: 'Safety system healthy: DHT11 active, Flame idle, Touch calibrated (touchBaseline ~17k)',
+    doorState: 'LOCKED',
+    temp: 28.7,
+    humidity: 43.0,
+    source: 'SENSOR_TASK',
+    createdAt: new Date(Date.now() - 1800000).toISOString()
+  },
+  {
+    id: 'evt_init_3',
+    type: 'CARD_TAP',
+    detail: 'Teacher RFID tag authorized. Classroom access granted.',
+    doorState: 'UNLOCKED',
+    temp: 29.0,
+    humidity: 42.0,
+    source: 'RC522',
+    createdAt: new Date(Date.now() - 600000).toISOString()
+  }
+];
 let telemetryHistory = [];
 let loginHistory = [];
 let blockedCards = {}; // uid -> blockedUntil timestamp
@@ -204,6 +235,22 @@ app.post('/api/telemetry', (req, res) => {
   if (telemetryHistory.length > 500) telemetryHistory.shift();
 
   res.json({ success: true });
+});
+
+app.get('/api/events', (req, res) => {
+  const { search, type, limit } = req.query;
+  let filtered = [...eventLog];
+
+  if (type && type !== 'ALL') {
+    filtered = filtered.filter(e => e.type === type);
+  }
+  if (search) {
+    const s = search.toLowerCase();
+    filtered = filtered.filter(e => (e.detail && e.detail.toLowerCase().includes(s)) || (e.type && e.type.toLowerCase().includes(s)));
+  }
+
+  const max = parseInt(limit, 10) || 50;
+  res.json({ events: filtered.slice(0, max), total: filtered.length });
 });
 
 app.post('/api/events', (req, res) => {
