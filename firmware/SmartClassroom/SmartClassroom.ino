@@ -78,17 +78,14 @@ void sensorTask(void* pvParameters) {
 }
 
 // -------------------------------------------------------------
-// Core 0 Task: Wi-Fi, Local Web Server, Cloud Sync & Serial CLI
+// Core 0 Task: Wi-Fi, Local Web Server & Cloud Sync
 // -------------------------------------------------------------
 void networkTask(void* pvParameters) {
   for (;;) {
-    // 1. Process Serial CLI commands and output periodic 1s [STATUS] line
-    CLI.update();
-
-    // 2. Process Local HTTP Status Web Server
+    // 1. Process Local HTTP Status Web Server
     LocalWeb.update();
 
-    // 3. Process Cloud Telemetry & Offline event flushing
+    // 2. Process Cloud Telemetry & Offline event flushing
     Cloud.update();
 
     // Yield to FreeRTOS (Core 0 background tasks)
@@ -193,6 +190,7 @@ void setup() {
 }
 
 void loop() {
-  // Loop task on Core 1 yields immediately; execution runs in pinned FreeRTOS tasks
-  vTaskDelay(pdMS_TO_TICKS(1000));
+  // Process Serial Monitor CLI input and periodic status in main loopTask
+  CLI.update();
+  delay(10);
 }

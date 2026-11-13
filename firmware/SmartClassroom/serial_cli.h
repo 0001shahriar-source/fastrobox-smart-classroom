@@ -176,7 +176,7 @@ public:
           executeCommand(inputBuffer);
           inputBuffer = "";
         }
-      } else {
+      } else if (c >= 32 && c <= 126) {
         inputBuffer += c;
       }
     }
