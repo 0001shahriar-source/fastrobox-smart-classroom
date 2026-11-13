@@ -1,4 +1,4 @@
-# FastRobox 1.0 Write-Up LaTeX Source Files (Team T14)
+# FastRobox 1.0 Write-Up LaTeX Source Files (Team ID 14)
 
 ## Overview
 This folder contains the complete, compilation-ready LaTeX source files for all 12 Levels of the FastRobox 1.0 Techathon Grand Finale at BUBT.

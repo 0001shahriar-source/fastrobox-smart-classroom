@@ -68,7 +68,7 @@ async function runAllTests() {
     header('LEVEL 1 & 2 — Telemetry Ingestion & Device State');
 
     const tele = await request('POST', '/api/telemetry', {
-      device_id: 'T14-D1',
+      device_id: '14-D1',
       room_id: 'Room-101',
       seq: 101,
       ts: Date.now(),
@@ -132,7 +132,7 @@ async function runAllTests() {
     assert(s4.data.panic === true, 'Panic flag set to true in system state');
 
     await request('POST', '/api/telemetry', {
-      device_id: 'T14-D1', room_id: 'Room-101', seq: 102, ts: Date.now(),
+      device_id: '14-D1', room_id: 'Room-101', seq: 102, ts: Date.now(),
       temp_c: 33.5, rh: 87.0, heat_index_c: 36.0, flame: false,
       door: 'LOCKED', status: 'WARNING', heat_trend: 'RISING',
       rssi: -55, heap_kb: 180, chip_temp_c: 42.0, fw: '1.0.0', quality: 'good'
@@ -142,7 +142,7 @@ async function runAllTests() {
     assert(s5.data.heatTrend === 'RISING', 'Heat trend → RISING');
 
     await request('POST', '/api/telemetry', {
-      device_id: 'T14-D1', room_id: 'Room-101', seq: 103, ts: Date.now(),
+      device_id: '14-D1', room_id: 'Room-101', seq: 103, ts: Date.now(),
       temp_c: 41.0, rh: 90.0, heat_index_c: 46.0, flame: false,
       door: 'LOCKED', status: 'DANGER', heat_trend: 'RISING',
       rssi: -55, heap_kb: 178, chip_temp_c: 43.0, fw: '1.0.0', quality: 'good'
@@ -152,7 +152,7 @@ async function runAllTests() {
 
     // Reset to SAFE
     await request('POST', '/api/telemetry', {
-      device_id: 'T14-D1', room_id: 'Room-101', seq: 104, ts: Date.now(),
+      device_id: '14-D1', room_id: 'Room-101', seq: 104, ts: Date.now(),
       temp_c: 29.5, rh: 64.0, heat_index_c: 31.5, flame: false,
       door: 'LOCKED', status: 'SAFE', heat_trend: 'STABLE',
       rssi: -55, heap_kb: 182, chip_temp_c: 41.0, fw: '1.0.0', quality: 'good'
@@ -279,7 +279,7 @@ async function runAllTests() {
     header('LEVEL 9 — Simulated Door Control (Software-Only, LED/Serial shows state)');
 
     await request('POST', '/api/telemetry', {
-      device_id: 'T14-D1', room_id: 'Room-101', seq: 200, ts: Date.now(),
+      device_id: '14-D1', room_id: 'Room-101', seq: 200, ts: Date.now(),
       temp_c: 29.5, rh: 64.0, heat_index_c: 31.5, flame: false,
       door: 'LOCKED', status: 'SAFE', heat_trend: 'STABLE',
       rssi: -55, heap_kb: 182, chip_temp_c: 41.0, fw: '1.0.0', quality: 'good'

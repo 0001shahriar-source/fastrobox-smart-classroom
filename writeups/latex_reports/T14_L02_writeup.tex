@@ -26,7 +26,7 @@
 
 \pagestyle{fancy}
 \fancyhf{}
-\lhead{\textbf{FastRobox 1.0 Techathon} \textbar\ Team T14 (Grand Finale)}
+\lhead{\textbf{FastRobox 1.0 Techathon} \textbar\ Team ID 14 (Grand Finale)}
 \rhead{\textbf{Level 02 Write-Up} \textbar\ Page \thepage\ of 2}
 \renewcommand{\headrulewidth}{0.5pt}
 
@@ -49,11 +49,11 @@
 
 \section{1. Design}
 \noindent
-\textbf{Architecture \& Implementation:} Implements AP Captive Portal fallback (SSID: SmartRoom-T14 at 192.168.10.1) for zero-hardcoding Wi-Fi credentials and Room ID setup into NVS Preferences. Telemetry syncs every 5s with strictly increasing seq counter and SHA-256 HMAC anti-replay protection. Local web interface served via mDNS at http://classroom-t14.local.
+\textbf{Architecture \& Implementation:} Implements AP Captive Portal fallback (SSID: SmartRoom-T14 at 192.168.10.1) for zero-hardcoding Wi-Fi credentials and Room ID setup into NVS Preferences. Telemetry syncs every 5s with strictly increasing seq counter and SHA-256 HMAC anti-replay protection. Local web interface served via mDNS at http://classroom-14.local.
 
 \vspace{3pt}
 \noindent
-\textbf{System Dataflow:} ESP32-S3 Dual-Core SoC $\rightarrow$ GPIO Interfaced Sensors (RC522 RFID, DHT11, IR Flame, Touch Wire, Buzzer) $\rightarrow$ FreeRTOS Cooperative Tasks (SensorTask Core 1 @ 50ms, NetworkTask Core 0 @ 20ms) $\rightarrow$ Real-time State Machine $\rightarrow$ Local mDNS Web Server (\url{http://classroom-t14.local}) $\rightarrow$ Public HTTPS Express Cloud Server $\rightarrow$ Role-Based Dashboard.
+\textbf{System Dataflow:} ESP32-S3 Dual-Core SoC $\rightarrow$ GPIO Interfaced Sensors (RC522 RFID, DHT11, IR Flame, Touch Wire, Buzzer) $\rightarrow$ FreeRTOS Cooperative Tasks (SensorTask Core 1 @ 50ms, NetworkTask Core 0 @ 20ms) $\rightarrow$ Real-time State Machine $\rightarrow$ Local mDNS Web Server (\url{http://classroom-14.local}) $\rightarrow$ Public HTTPS Express Cloud Server $\rightarrow$ Role-Based Dashboard.
 
 \section{2. Where It Shows}
 \noindent
@@ -103,7 +103,7 @@ Measured live evaluation and video verification against official competition spe
 \textbf{Captive portal credential entry} & 00:25 & Saved judge SSID and Room-101 into NVS & Zero hardcoding rule met & \textcolor{accent}{\textbf{PASS}} \\
 \textbf{5-second telemetry ingestion} & 01:10 & HTTP POST /api/telemetry, measured 2ms & Response time < 500ms & \textcolor{accent}{\textbf{PASS}} \\
 \textbf{Anti-replay seq validation} & 01:45 & Duplicate seq 101 rejected by cloud server & Duplicate discard verified & \textcolor{accent}{\textbf{PASS}} \\
-\textbf{Local mDNS web page load} & 02:15 & http://classroom-t14.local loaded in 180ms & Local server responsive & \textcolor{accent}{\textbf{PASS}} \\
+\textbf{Local mDNS web page load} & 02:15 & http://classroom-14.local loaded in 180ms & Local server responsive & \textcolor{accent}{\textbf{PASS}} \\
 
 \bottomrule
 \end{tabularx}
