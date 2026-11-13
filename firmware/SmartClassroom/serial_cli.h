@@ -139,10 +139,29 @@ public:
       if (commaIndex > 0) {
         String ssid = cmd.substring(9, commaIndex);
         String pass = cmd.substring(commaIndex + 1);
+        ssid.trim();
+        pass.trim();
         Config.saveWifi(ssid.c_str(), pass.c_str());
-        Serial.printf("[CMD] SET_WIFI: Saved SSID '%s'. Reconnecting...\n", ssid.c_str());
-        WiFi.disconnect();
+        Serial.printf("[CMD] SET_WIFI: Saved SSID '%s'. Connecting now...\n", ssid.c_str());
+        WiFi.disconnect(true);
+        delay(200);
+        WiFi.mode(WIFI_STA);
         WiFi.begin(ssid.c_str(), pass.c_str());
+        unsigned long tStart = millis();
+        while (WiFi.status() != WL_CONNECTED && millis() - tStart < 8000) {
+          delay(300);
+          Serial.print(".");
+        }
+        Serial.println();
+        if (WiFi.status() == WL_CONNECTED) {
+          Serial.printf("[NET] Connected successfully! IP Address: %s | RSSI: %d dBm\n", 
+                        WiFi.localIP().toString().c_str(), WiFi.RSSI());
+          Signals.setState(STATE_SAFE);
+        } else {
+          Serial.println(F("[NET] Failed to connect. Check Wi-Fi SSID / Password."));
+        }
+      } else {
+        Serial.println(F("[CMD] Invalid format. Use: SET_WIFI:<ssid>,<pass>"));
       }
     }
     else if (cmd.startsWith("SET_ROOM:")) {
