@@ -59,8 +59,16 @@ Since only jumper wires are allowed and no breadboard is permitted:
 * As per rule Section 3: *No physical motor or lock is provided.*
 * The door state is maintained as a finite state machine: `LOCKED` vs `UNLOCKED`.
 * Indicated by:
-  - **Onboard RGB LED:** RED = LOCKED | GREEN = UNLOCKED | BLUE = NORMAL / IDLE | FLASHING RED = FIRE EMERGENCY
-  - **Buzzer:** 1 short beep on Student Unlock, 2 beeps on Lock, Continuous siren on Fire/Panic.
+  - **Onboard RGB LED (Device Signals Table):**
+    - State 1 (Fire): Red fast flashing (5 Hz)
+    - State 2 (Panic): Red and Blue alternating (100ms toggle)
+    - State 3 (Access Granted / Unlocked): Solid Green for door unlock duration (default 5s)
+    - State 4 (Access Denied): Three quick Red flashes
+    - State 5 (Heat Danger): Red 2 Hz heartbeat
+    - State 9 (Warning): Yellow 2 Hz heartbeat
+    - State 10 (Wi-Fi Setup / Offline): Blue 2 Hz heartbeat
+    - State 11 (Safe / Normal): Green 2 Hz heartbeat
+  - **Buzzer:** 1 short beep on Access Granted, 2 beeps on Denied, continuous 200ms on/off on Fire, 100ms on/off on Panic.
   - **Local Status Webpage:** Real-time visual lock icon and badge.
   - **Cloud Dashboard:** Live toggle switch and animated door badge.
 
