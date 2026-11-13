@@ -58,8 +58,8 @@ public:
       float chipTemp = 41.5f;
     #endif
 
-    Serial.printf("[STATUS] up=%lus T=%.1fC RH=%.0f%% HI=%.1fC flame=%d touch=%u door=%s state=%s trend=%s rssi=%d heap=%uk psram=%uk chip=%.1fC fw=%s\n",
-                  upSec, temp, rh, hi, flame, Safety.lastTouchVal, door, state, trend, rssi, heapKb, psramKb, chipTemp, FIRMWARE_VERSION);
+    Serial.printf("[STATUS] up=%lus T=%.1fC RH=%.0f%% HI=%.1fC flame=%d door=%s state=%s trend=%s rssi=%d heap=%uk psram=%uk chip=%.1fC fw=%s\n",
+                  upSec, temp, rh, hi, flame, door, state, trend, rssi, heapKb, psramKb, chipTemp, FIRMWARE_VERSION);
   }
 
   void executeCommand(const String& cmd) {

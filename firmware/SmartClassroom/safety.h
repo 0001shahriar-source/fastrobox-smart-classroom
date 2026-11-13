@@ -235,8 +235,8 @@ public:
     // --- 2. Capacitive Touch Panic Pad ---
     #if SOC_TOUCH_SENSOR_NUM > 0
     lastTouchVal = touchRead(TOUCH_PANIC_PIN);
-    // ESP32-S3 touchRead usually returns values > 50,000 when untouched, drops below 30,000 on finger press
-    bool touchDown = (touchBaseline > 20000 && lastTouchVal < (touchBaseline * 6 / 10)); 
+    // Baseline is ~17,460. Real finger touch drops below 12,000.
+    bool touchDown = (lastTouchVal > 0 && lastTouchVal < 12000); 
     #else
     lastTouchVal = 99999;
     bool touchDown = false;
