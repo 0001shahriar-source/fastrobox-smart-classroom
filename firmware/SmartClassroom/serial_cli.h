@@ -75,6 +75,22 @@ public:
       Serial.println(F("[CMD]   csi     - Wi-Fi CSI packet rate, subcarriers, channel (Level 11)"));
       Serial.println(F("[CMD]   Dynamic setters: SET_WIFI:<ssid>,<pass>, SET_ROOM:<id>, SET_TIME:<HH:MM>, SET_TEMP:<thresh>, SET_DOOR_TIME:<sec>"));
     }
+    else if (cmd.equalsIgnoreCase("scan")) {
+      Serial.println(F("[CMD] Scanning for available 2.4GHz Wi-Fi networks..."));
+      WiFi.mode(WIFI_STA);
+      WiFi.disconnect();
+      delay(100);
+      int n = WiFi.scanNetworks();
+      if (n == 0) {
+        Serial.println(F("[CMD] No networks found."));
+      } else {
+        Serial.printf("[CMD] Found %d networks:\n", n);
+        for (int i = 0; i < n; ++i) {
+          Serial.printf("[CMD]   %d: '%s' | Signal: %d dBm | Ch: %d\n", 
+                        i + 1, WiFi.SSID(i).c_str(), WiFi.RSSI(i), WiFi.channel(i));
+        }
+      }
+    }
     else if (cmd.equalsIgnoreCase("beep")) {
       Serial.println(F("[CMD] Testing Buzzer on GPIO 2 with dual High + 2700Hz Tone..."));
       digitalWrite(BUZZER_PIN, HIGH);
