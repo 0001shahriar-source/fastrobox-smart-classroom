@@ -1,4 +1,4 @@
-# FastRobox 1.0 Write-Up LaTeX Source Files (Team T07)
+# FastRobox 1.0 Write-Up LaTeX Source Files (Team T14)
 
 ## Overview
 This folder contains the complete, compilation-ready LaTeX source files for all 12 Levels of the FastRobox 1.0 Techathon Grand Finale at BUBT.
@@ -15,7 +15,7 @@ Each write-up is formatted to strictly satisfy the official participant rulebook
 ---
 
 ## Files in this Directory
-- `T07_L01_writeup.tex` through `T07_L12_writeup.tex` — Pre-filled reports for Levels 1 to 12.
+- `T14_L01_writeup.tex` through `T14_L12_writeup.tex` — Pre-filled reports for Levels 1 to 12.
 - `template_writeup.tex` — Universal 2-page template for any custom level.
 - `screenshots/` — Folder containing 4 image files:
   - `serial_monitor.png` (Surface 1)
@@ -27,13 +27,13 @@ Each write-up is formatted to strictly satisfy the official participant rulebook
 
 ## How to Compile to PDF
 ### Option 1: On Overleaf (Easiest & Recommended)
-1. Upload the `T07_FastRobox_Writeup_LaTeX.zip` directly to [Overleaf](https://www.overleaf.com) (`New Project` -> `Upload Project`).
-2. Select any `T07_L<NN>_writeup.tex` file as the main document.
+1. Upload the `T14_FastRobox_Writeup_LaTeX.zip` directly to [Overleaf](https://www.overleaf.com) (`New Project` -> `Upload Project`).
+2. Select any `T14_L<NN>_writeup.tex` file as the main document.
 3. Click **Recompile** — it will produce a clean, publication-grade 2-page PDF immediately!
 
 ### Option 2: Locally using pdflatex or TeX Live / MiKTeX
 ```bash
-pdflatex T07_L01_writeup.tex
+pdflatex T14_L01_writeup.tex
 ```
 
 ---

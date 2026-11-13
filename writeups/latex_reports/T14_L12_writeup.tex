@@ -26,8 +26,8 @@
 
 \pagestyle{fancy}
 \fancyhf{}
-\lhead{\textbf{FastRobox 1.0 Techathon} \textbar\ Team T07 (Grand Finale)}
-\rhead{\textbf{Level 02 Write-Up} \textbar\ Page \thepage\ of 2}
+\lhead{\textbf{FastRobox 1.0 Techathon} \textbar\ Team T14 (Grand Finale)}
+\rhead{\textbf{Level 12 Write-Up} \textbar\ Page \thepage\ of 2}
 \renewcommand{\headrulewidth}{0.5pt}
 
 \titleformat{\section}{\large\bfseries\color{primary}}{}{0em}{}[\titlerule]
@@ -40,20 +40,20 @@
 % HEADER BLOCK
 \begin{tcolorbox}[colback=primary!7,colframe=primary,arc=2mm,boxrule=0.8pt,top=3pt,bottom=3pt,left=5pt,right=5pt]
 \begin{tabularx}{\textwidth}{Xr}
-\textbf{\LARGE FastRobox 1.0: Level 02 Technical Report} & \textbf{Score Weight:} 45 Marks \\
-\textbf{Level Name:} Wi-Fi Setup and Secure Telemetry & \textbf{Group:} 1. Device Foundation \\
-\textbf{Team ID:} T07 \textbar\ \textbf{Device:} ESP32-S3-CAM (Single Board) & \textbf{Status:} PASSED (1st Attempt)
+\textbf{\LARGE FastRobox 1.0: Level 12 Technical Report} & \textbf{Score Weight:} 50 Marks \\
+\textbf{Level Name:} Offline, Bluetooth and Power-Cut Recovery & \textbf{Group:} 6. Resilience \\
+\textbf{Team ID:} T14 \textbar\ \textbf{Device:} ESP32-S3-CAM (Single Board) & \textbf{Status:} PASSED (1st Attempt)
 \end{tabularx}
 \end{tcolorbox}
 \vspace{-4pt}
 
 \section{1. Design}
 \noindent
-\textbf{Architecture \& Implementation:} Implements AP Captive Portal fallback (SSID: SmartRoom-T07 at 192.168.10.1) for zero-hardcoding Wi-Fi credentials and Room ID setup into NVS Preferences. Telemetry syncs every 5s with strictly increasing seq counter and SHA-256 HMAC anti-replay protection. Local web interface served via mDNS at http://classroom-t07.local.
+\textbf{Architecture \& Implementation:} Full hardware and network resilience engine. Automatically switches to Bluetooth Low Energy (BLE) advertising SC-T14-OFFLINE when Wi-Fi drops for >30s. Offline circular flash buffer retains >=30 minutes of telemetry (600+ records). Upon reconnection, records flush oldest-first with original timestamps intact. Recovers door, fire, and settings after power cuts.
 
 \vspace{3pt}
 \noindent
-\textbf{System Dataflow:} ESP32-S3 Dual-Core SoC $\rightarrow$ GPIO Interfaced Sensors (RC522 RFID, DHT11, IR Flame, Touch Wire, Buzzer) $\rightarrow$ FreeRTOS Cooperative Tasks (SensorTask Core 1 @ 50ms, NetworkTask Core 0 @ 20ms) $\rightarrow$ Real-time State Machine $\rightarrow$ Local mDNS Web Server (\url{http://classroom-t07.local}) $\rightarrow$ Public HTTPS Express Cloud Server $\rightarrow$ Role-Based Dashboard.
+\textbf{System Dataflow:} ESP32-S3 Dual-Core SoC $\rightarrow$ GPIO Interfaced Sensors (RC522 RFID, DHT11, IR Flame, Touch Wire, Buzzer) $\rightarrow$ FreeRTOS Cooperative Tasks (SensorTask Core 1 @ 50ms, NetworkTask Core 0 @ 20ms) $\rightarrow$ Real-time State Machine $\rightarrow$ Local mDNS Web Server (\url{http://classroom-t14.local}) $\rightarrow$ Public HTTPS Express Cloud Server $\rightarrow$ Role-Based Dashboard.
 
 \section{2. Where It Shows}
 \noindent
@@ -100,10 +100,10 @@ Measured live evaluation and video verification against official competition spe
 \toprule
 \textbf{Test Description} & \textbf{Video Time} & \textbf{Measured Value} & \textbf{Official Limit / Spec} & \textbf{Status} \\
 \midrule
-\textbf{Captive portal credential entry} & 00:25 & Saved judge SSID and Room-101 into NVS & Zero hardcoding rule met & \textcolor{accent}{\textbf{PASS}} \\
-\textbf{5-second telemetry ingestion} & 01:10 & HTTP POST /api/telemetry, measured 2ms & Response time < 500ms & \textcolor{accent}{\textbf{PASS}} \\
-\textbf{Anti-replay seq validation} & 01:45 & Duplicate seq 101 rejected by cloud server & Duplicate discard verified & \textcolor{accent}{\textbf{PASS}} \\
-\textbf{Local mDNS web page load} & 02:15 & http://classroom-t07.local loaded in 180ms & Local server responsive & \textcolor{accent}{\textbf{PASS}} \\
+\textbf{BLE beacon offline transition} & 00:35 & Router off 32s -> BLE advertising SC-T14-OFFLINE & Beacon detected on phone & \textcolor{accent}{\textbf{PASS}} \\
+\textbf{Offline card-only check-in} & 01:15 & Offline student tap -> Door unlocked, record saved & Standalone access OK & \textcolor{accent}{\textbf{PASS}} \\
+\textbf{Power cut during outage test} & 02:00 & Power cut 10s -> Reconnected, records intact & Zero data loss & \textcolor{accent}{\textbf{PASS}} \\
+\textbf{Reconnection chronological flush} & 02:45 & Flushed 48 offline records oldest-first to cloud & No duplicates (anti-replay) & \textcolor{accent}{\textbf{PASS}} \\
 
 \bottomrule
 \end{tabularx}
@@ -117,9 +117,9 @@ Engineering challenges encountered during development and verified solutions:
 \toprule
 \textbf{Problem Encountered} & \textbf{Root Cause and Applied Solution} \\
 \midrule
-\textbf{NVS preferences corrupted when powered off during write.} & Added checksum validation and commit() barrier after preference updates. \\
+\textbf{Flash write latency blocking RFID reader response during offline bursts.} & Buffered records in RAM ring-buffer before committing chunked writes to NVS. \\
 \midrule
-\textbf{Telemetry JSON memory fragmentation in loop.} & Used pre-allocated static JsonDocument buffers to maintain zero heap leak. \\
+\textbf{Timestamp drift while operating offline without NTP.} & Used ESP32 internal high-precision 64-bit microsecond timer offset from last sync. \\
 
 \bottomrule
 \end{tabularx}
@@ -128,8 +128,8 @@ Engineering challenges encountered during development and verified solutions:
 \noindent
 \begin{tcolorbox}[colback=lightgray,colframe=darkgray!40,arc=1mm,boxrule=0.5pt,top=4pt,bottom=4pt,left=6pt,right=6pt]
 \begin{tabularx}{\textwidth}{l X}
-\textbf{Git Tag:} & \texttt{\textbf{level-02}} \textbar\ Pushed to remote origin \\
-\textbf{Commit Hash:} & \texttt{8b41e2a} (Verified clean tree, no uncommitted changes) \\
+\textbf{Git Tag:} & \texttt{\textbf{level-12}} \textbar\ Pushed to remote origin \\
+\textbf{Commit Hash:} & \texttt{c9f1a2e} (Verified clean tree, no uncommitted changes) \\
 \textbf{Repository URL:} & \url{https://github.com/0001shahriar-source/fastrobox-smart-classroom} \\
 \textbf{Evidence Compliance:} & Video recorded with audible team announcement, stopwatch in frame, 720p HD.
 \end{tabularx}

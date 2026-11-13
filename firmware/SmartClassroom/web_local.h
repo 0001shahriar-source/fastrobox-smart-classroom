@@ -24,11 +24,11 @@ public:
   LocalWebServer() : server(80), mdnsStarted(false) {}
 
   void begin() {
-    // Start mDNS responder (http://smartclass-t07.local)
+    // Start mDNS responder (http://smartclass-t14.local)
     if (!mdnsStarted) {
-      if (MDNS.begin("smartclass-t07")) {
+      if (MDNS.begin("smartclass-t14")) {
         mdnsStarted = true;
-        Serial.println(F("[NET] mDNS responder started: http://smartclass-t07.local"));
+        Serial.println(F("[NET] mDNS responder started: http://smartclass-t14.local"));
       }
     }
 

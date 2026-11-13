@@ -149,15 +149,15 @@ void setup() {
       WiFi.mode(WIFI_AP_STA);
       // Setup AP name: SmartClass-<TeamID> with 8-char password printed at boot (Level 2 Task 1)
       const char* apPass = "sc889900";
-      WiFi.softAP("SmartClass-T07", apPass);
-      Serial.printf("[NET] Access Point started: 'SmartClass-T07' | Password: %s | IP: 192.168.4.1\n", apPass);
+      WiFi.softAP("SmartClass-T14", apPass);
+      Serial.printf("[NET] Access Point started: 'SmartClass-T14' | Password: %s | IP: 192.168.4.1\n", apPass);
       Signals.setState(STATE_WIFI_SETUP_OR_OFFLINE);
     }
   } else {
     WiFi.mode(WIFI_AP);
     const char* apPass = "sc889900";
-    WiFi.softAP("SmartClass-T07", apPass);
-    Serial.printf("[NET] No saved network. Access Point started: 'SmartClass-T07' | Password: %s | Setup page at 192.168.4.1\n", apPass);
+    WiFi.softAP("SmartClass-T14", apPass);
+    Serial.printf("[NET] No saved network. Access Point started: 'SmartClass-T14' | Password: %s | Setup page at 192.168.4.1\n", apPass);
     Signals.setState(STATE_WIFI_SETUP_OR_OFFLINE);
   }
 

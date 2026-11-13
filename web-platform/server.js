@@ -17,7 +17,7 @@ const DB_FILE = path.join(__dirname, 'db_records.json');
 // System Telemetry & Hardware State
 // -------------------------------------------------------------
 let systemStatus = {
-  deviceId: 'T07-D1',
+  deviceId: 'T14-D1',
   roomId: 'Room-101',
   classStartTime: '09:00',
   doorState: 'LOCKED',

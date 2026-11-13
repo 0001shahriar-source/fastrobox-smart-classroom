@@ -72,7 +72,7 @@ public:
     http.addHeader("Content-Type", "application/json");
 
     JsonDocument doc;
-    doc["device_id"] = "T07-D1";
+    doc["device_id"] = "T14-D1";
     doc["room_id"] = Config.get().roomId;
     JsonArray events = doc["events"].to<JsonArray>();
 
@@ -111,7 +111,7 @@ public:
     http.addHeader("Content-Type", "application/json");
 
     JsonDocument doc;
-    doc["device_id"] = "T07-D1";
+    doc["device_id"] = "T14-D1";
     doc["room_id"] = Config.get().roomId;
     doc["seq"] = getNextSeq();
     doc["ts"] = (millis() / 1000) + 1700000000; // Simulated/NTP Unix time
@@ -137,7 +137,7 @@ public:
 
     // Exact JSON Telemetry schema specified in Section 6
     JsonDocument doc;
-    doc["device_id"] = "T07-D1";
+    doc["device_id"] = "T14-D1";
     doc["room_id"] = Config.get().roomId;
     doc["seq"] = getNextSeq();
     doc["ts"] = (millis() / 1000) + 1700000000;
