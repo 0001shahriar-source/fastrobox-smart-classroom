@@ -102,6 +102,8 @@ private:
   }
 
 public:
+  uint32_t lastTouchVal;
+
   SafetySystem() : dht(DHT_PIN, DHT11), temperature(25.0f), humidity(50.0f), 
                    heatIndex(25.0f), dataQuality("good"), heatTrend(TREND_STABLE),
                    historyCount(0), historyIdx(0), currentStatus(STATUS_SAFE),
@@ -109,7 +111,8 @@ public:
                    rawFlamePresent(false), flameContinuousStartTime(0), fireLatched(false),
                    buzzerSilenced(false), touchBaseline(0), touchStartTime(0),
                    touchHolding(false), panicActive(false), panicStartTime(0),
-                   lastValidDhtTime(0), lastValidRfidTime(0), dhtError(false), rfidError(false) {}
+                   lastValidDhtTime(0), lastValidRfidTime(0), dhtError(false), rfidError(false),
+                   lastTouchVal(0) {}
 
   void begin() {
     dht.begin();
@@ -230,11 +233,12 @@ public:
     }
 
     // --- 2. Capacitive Touch Panic Pad ---
-    // Strict threshold: Finger touch sharply drops reading below 25000
     #if SOC_TOUCH_SENSOR_NUM > 0
-    uint32_t touchVal = touchRead(TOUCH_PANIC_PIN);
-    bool touchDown = (touchVal < 25000); 
+    lastTouchVal = touchRead(TOUCH_PANIC_PIN);
+    // ESP32-S3 touchRead usually returns values > 50,000 when untouched, drops below 30,000 on finger press
+    bool touchDown = (touchBaseline > 20000 && lastTouchVal < (touchBaseline * 6 / 10)); 
     #else
+    lastTouchVal = 99999;
     bool touchDown = false;
     #endif
 
