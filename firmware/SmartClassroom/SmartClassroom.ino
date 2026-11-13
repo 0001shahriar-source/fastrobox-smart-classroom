@@ -3,6 +3,7 @@
 
 #include "pins.h"
 #include "config.h"
+#include "device_signals.h"
 #include "door.h"
 #include "safety.h"
 #include "rfid.h"
@@ -12,6 +13,7 @@
 
 // Global instances
 ConfigManager Config;
+DeviceSignals Signals;
 SimulatedDoor Door;
 SafetySystem Safety;
 RfidManager Rfid;
@@ -19,114 +21,178 @@ SerialCli CLI;
 LocalWebServer LocalWeb;
 CloudSyncManager Cloud;
 
-unsigned long lastWifiCheck = 0;
-bool apModeActive = false;
+// Task handles for Dual-Core FreeRTOS execution
+TaskHandle_t sensorTaskHandle = NULL;
+TaskHandle_t networkTaskHandle = NULL;
+
+unsigned long bootButtonDownTime = 0;
+bool bootButtonPressed = false;
+
+// -------------------------------------------------------------
+// Core 1 Task: Sensor Sampling, Fast Safety & Signal Actuation
+// -------------------------------------------------------------
+void sensorTask(void* pvParameters) {
+  unsigned long lastDhtTime = 0;
+
+  for (;;) {
+    // 1. Fast safety poll (Flame 100ms, Touch, Sensor unplugged watchdog)
+    Safety.updateFast();
+
+    // 2. Periodic DHT11 read every 5 seconds (Level 1 Task 3)
+    if (millis() - lastDhtTime >= 5000) {
+      lastDhtTime = millis();
+      Safety.updateDht();
+    }
+
+    // 3. RFID reader poll every 200 ms (Level 1 Task 3)
+    String scannedUid, scannedType;
+    if (Rfid.update(scannedUid, scannedType)) {
+      char detailBuf[64];
+      snprintf(detailBuf, sizeof(detailBuf), "%s card: %s", scannedType.c_str(), scannedUid.c_str());
+      Cloud.sendEvent("CARD_TAP", detailBuf);
+    }
+
+    // 4. Update Door FSM and 2Hz LED/Buzzer State Signals
+    Door.update();
+    Signals.update();
+
+    // 5. BOOT button 5-second hold detector (Reset Wi-Fi credentials)
+    if (digitalRead(BOOT_BUTTON_PIN) == LOW) {
+      if (!bootButtonPressed) {
+        bootButtonPressed = true;
+        bootButtonDownTime = millis();
+      } else if (millis() - bootButtonDownTime >= 5000) {
+        Serial.println(F("[EVENT] BOOT button held for 5 seconds! Clearing saved details..."));
+        Config.saveWifi("", "");
+        Signals.triggerAccessDenied();
+        delay(500);
+        ESP.restart();
+      }
+    } else {
+      bootButtonPressed = false;
+    }
+
+    // Yield to FreeRTOS (run at ~20Hz loop on Core 1)
+    vTaskDelay(pdMS_TO_TICKS(50));
+  }
+}
+
+// -------------------------------------------------------------
+// Core 0 Task: Wi-Fi, Local Web Server, Cloud Sync & Serial CLI
+// -------------------------------------------------------------
+void networkTask(void* pvParameters) {
+  for (;;) {
+    // 1. Process Serial CLI commands and output periodic 1s [STATUS] line
+    CLI.update();
+
+    // 2. Process Local HTTP Status Web Server
+    LocalWeb.update();
+
+    // 3. Process Cloud Telemetry & Offline event flushing
+    Cloud.update();
+
+    // Yield to FreeRTOS (Core 0 background tasks)
+    vTaskDelay(pdMS_TO_TICKS(20));
+  }
+}
 
 void setup() {
   Serial.begin(115200);
-  delay(1000);
+  delay(500);
 
   Serial.println(F("\n========================================================"));
-  Serial.println(F(" FASTROBOX 1.0 GRAND FINALE - SMART CLASSROOM SYSTEM    "));
-  Serial.println(F(" Hardware: ESP32-S3-CAM | Zero Hardcoding Active        "));
+  Serial.println(F(" FASTROBOX 1.0 GRAND FINALE - AI SMART CLASSROOM SYSTEM "));
+  Serial.println(F(" Dual-Core FreeRTOS Active | Hardware: ESP32-S3-CAM     "));
   Serial.println(F("========================================================"));
 
-  // 1. Initialize Configuration (Loads from non-volatile NVS storage)
-  Config.begin();
-
-  // 2. Initialize Actuators & Safety
-  Door.begin();
-  Safety.begin();
-
-  // 3. Initialize RFID Reader
-  Rfid.begin();
-
-  // 4. Initialize Serial Command Line Interface
+  // 1. Start Serial CLI & print BOOT reset reason
   CLI.begin();
 
-  // 5. Connect Wi-Fi if credentials exist, otherwise start SoftAP
+  // 2. Initialize Configuration & Signals
+  Config.begin();
+  Signals.begin();
+  Door.begin();
+
+  // 3. Start-up Check: Flame sensor first (Level 1 Task 6)
+  pinMode(FLAME_PIN, INPUT_PULLUP);
+  delay(50);
+  if (digitalRead(FLAME_PIN) == LOW) {
+    Serial.println(F("[ALERT] Flame detected at start-up! Setting door UNLOCKED."));
+    Door.unlock(0, true);
+    Signals.setState(STATE_FIRE);
+  } else {
+    Serial.println(F("[INFO] No flame detected at start-up. Door securely LOCKED."));
+    Door.lock();
+    Signals.setState(STATE_SAFE);
+  }
+
+  // 4. Initialize Safety & RFID modules
+  Safety.begin();
+  Rfid.begin();
+
+  // 5. Network Setup: Wi-Fi STA or Fallback Setup Access Point
   if (strlen(Config.get().wifiSsid) > 0) {
-    Serial.printf("[WIFI] Connecting to dynamically configured network: %s\n", Config.get().wifiSsid);
+    Serial.printf("[NET] Connecting to Wi-Fi SSID: '%s'...\n", Config.get().wifiSsid);
     WiFi.mode(WIFI_STA);
     WiFi.begin(Config.get().wifiSsid, Config.get().wifiPass);
-    
-    // Non-blocking initial wait (max 4 seconds)
-    unsigned long startAttempt = millis();
-    while (WiFi.status() != WL_CONNECTED && millis() - startAttempt < 4000) {
+
+    unsigned long startTry = millis();
+    while (WiFi.status() != WL_CONNECTED && millis() - startTry < 5000) {
       delay(200);
       Serial.print(".");
     }
     Serial.println();
 
     if (WiFi.status() == WL_CONNECTED) {
-      Serial.print(F("[WIFI] Connected successfully! IP Address: "));
+      Serial.print(F("[NET] Connected successfully! IP Address: "));
       Serial.println(WiFi.localIP());
-      Door.beep(80, 2);
+      Signals.setState(STATE_SAFE);
     } else {
-      Serial.println(F("[WIFI] Could not connect. Starting Fallback Configuration SoftAP..."));
+      Serial.println(F("[NET] Wi-Fi connection timed out. Starting Setup Access Point..."));
       WiFi.mode(WIFI_AP_STA);
-      WiFi.softAP("SmartClassroom-Setup", "bubt1234");
-      Serial.print(F("[WIFI] SoftAP Active: 'SmartClassroom-Setup' | IP: "));
-      Serial.println(WiFi.softAPIP());
-      apModeActive = true;
+      // Setup AP name: SmartClass-<TeamID> with 8-char password printed at boot (Level 2 Task 1)
+      const char* apPass = "sc889900";
+      WiFi.softAP("SmartClass-T07", apPass);
+      Serial.printf("[NET] Access Point started: 'SmartClass-T07' | Password: %s | IP: 192.168.4.1\n", apPass);
+      Signals.setState(STATE_WIFI_SETUP_OR_OFFLINE);
     }
   } else {
-    Serial.println(F("[WIFI] No Wi-Fi configured. Starting SoftAP for setup..."));
     WiFi.mode(WIFI_AP);
-    WiFi.softAP("SmartClassroom-Setup", "bubt1234");
-    Serial.print(F("[WIFI] Connect to 'SmartClassroom-Setup' (Pass: bubt1234) at IP: "));
-    Serial.println(WiFi.softAPIP());
-    apModeActive = true;
+    const char* apPass = "sc889900";
+    WiFi.softAP("SmartClass-T07", apPass);
+    Serial.printf("[NET] No saved network. Access Point started: 'SmartClass-T07' | Password: %s | Setup page at 192.168.4.1\n", apPass);
+    Signals.setState(STATE_WIFI_SETUP_OR_OFFLINE);
   }
 
-  // 6. Initialize Local Web Status Server & Cloud Client
+  // 6. Start Local Web Server & Cloud Sync Manager
   LocalWeb.begin();
   Cloud.begin();
 
-  Serial.println(F("[SYSTEM] Initialization Complete. Ready for judging tests."));
-  CLI.printStatus();
+  // 7. Launch FreeRTOS Tasks on Dual Cores (Core 0 and Core 1)
+  xTaskCreatePinnedToCore(
+    sensorTask,         // Task function
+    "SensorTask",       // Name
+    4096,               // Stack size
+    NULL,               // Parameters
+    2,                  // Priority
+    &sensorTaskHandle,  // Handle
+    1                   // Pin to Core 1
+  );
+
+  xTaskCreatePinnedToCore(
+    networkTask,        // Task function
+    "NetworkTask",      // Name
+    8192,               // Stack size
+    NULL,               // Parameters
+    1,                  // Priority
+    &networkTaskHandle, // Handle
+    0                   // Pin to Core 0
+  );
+
+  Serial.println(F("[SYSTEM] Dual-Core FreeRTOS tasks started. System fully armed."));
 }
 
 void loop() {
-  // Update Simulated Door state machine and visual LED/buzzer animations
-  Door.update();
-
-  // Safety sensors: flame detection, capacitive touch panic, DHT11 readings
-  bool prevFlame = Safety.isFlameDetected();
-  bool prevPanic = Safety.isPanicTriggered();
-  Safety.update();
-
-  if (!prevFlame && Safety.isFlameDetected()) {
-    Cloud.sendEvent("FLAME_ALERT", "Flame sensor detected fire! Emergency unlock.");
-  }
-  if (!prevPanic && Safety.isPanicTriggered()) {
-    Cloud.sendEvent("PANIC_ALERT", "Touch panic wire activated by hand touch.");
-  }
-
-  // RFID scan update
-  String scannedUid, role;
-  if (Rfid.update(scannedUid, role)) {
-    char detailBuf[64];
-    snprintf(detailBuf, sizeof(detailBuf), "%s card: %s", role.c_str(), scannedUid.c_str());
-    Cloud.sendEvent("ATTENDANCE", detailBuf);
-  }
-
-  // Handle Serial Commands (Instant on-the-spot test configuration)
-  CLI.update();
-
-  // Handle Local Web Server requests
-  LocalWeb.update();
-
-  // Handle Cloud Telemetry & Offline Event Flushing
-  Cloud.update();
-
-  // Periodic Wi-Fi reconnection monitor (non-blocking)
-  if (millis() - lastWifiCheck > 10000) {
-    lastWifiCheck = millis();
-    if (strlen(Config.get().wifiSsid) > 0 && WiFi.status() != WL_CONNECTED && !apModeActive) {
-      Serial.println(F("[WIFI] Auto-reconnecting..."));
-      WiFi.reconnect();
-    }
-  }
+  // Loop task on Core 1 yields immediately; execution runs in pinned FreeRTOS tasks
+  vTaskDelay(pdMS_TO_TICKS(1000));
 }
-

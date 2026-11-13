@@ -12,12 +12,13 @@
 <body>
   <!-- Fire Alert Top Banner -->
   <div id="fireAlertBanner" class="alert-top-banner hidden">
-    🔥 <strong>CRITICAL FIRE ALERT DETECTED!</strong> Simulated Classroom Door has been automatically UNLOCKED for safety evacuation.
+    🔥 <strong id="t_fireAlert">CRITICAL FIRE ALERT DETECTED!</strong> Simulated Classroom Door has been automatically UNLOCKED for safety evacuation.
+    <button class="btn btn-secondary" style="margin-left:12px;padding:4px 10px;" onclick="resetFire()">Reset Fire</button>
   </div>
 
   <!-- Panic Alert Top Banner -->
   <div id="panicAlertBanner" class="alert-top-banner panic-banner hidden">
-    🚨 <strong>TOUCH PANIC WIRE ACTIVATED!</strong> Immediate assistance required in the classroom!
+    🚨 <strong id="t_panicAlert">TOUCH PANIC WIRE ACTIVATED!</strong> Immediate assistance required in the classroom!
   </div>
 
   <div class="app-layout">
@@ -27,19 +28,27 @@
         <div class="logo-box">
           <span class="logo-icon">🤖</span>
           <div>
-            <h1>SmartClassroom Cloud</h1>
-            <p class="subtitle">FastRobox 1.0 Techathon Grand Finale (BUBT)</p>
+            <h1 id="t_mainTitle">SmartClassroom Cloud</h1>
+            <p class="subtitle" id="t_subTitle">FastRobox 1.0 Techathon Grand Finale (BUBT)</p>
           </div>
         </div>
       </div>
 
       <div class="nav-right">
+        <!-- Language Switcher (Level 4 Task 6) -->
+        <button class="btn btn-secondary" id="langToggleBtn" onclick="toggleLanguage()">🌐 বাংলা / EN</button>
+
         <div class="status-indicator">
           <span id="connDot" class="dot dot-online"></span>
-          <span id="connText">DEVICE CONNECTED</span>
+          <span id="connText">DEVICE ONLINE</span>
         </div>
-        <button class="btn btn-secondary" onclick="openConfigModal()">⚙️ Room Config</button>
-        <button class="btn btn-secondary" style="color:#ef4444;" onclick="purgePrivacyData()">🗑️ Wipe Test Data</button>
+
+        <!-- User Role Profile Pill -->
+        <div id="userProfilePill" class="status-indicator" style="cursor:pointer;" onclick="openLoginModal()">
+          <span>👤 <strong id="currentUserName">Admin (Full Access)</strong></span>
+        </div>
+
+        <button class="btn btn-secondary" style="color:#ef4444;" onclick="purgePrivacyData()">🗑️ <span id="t_wipeData">Wipe Test Data</span></button>
       </div>
     </header>
 
@@ -48,7 +57,7 @@
       <!-- 1. Simulated Door Card -->
       <div class="card door-card">
         <div class="card-header">
-          <h2>Simulated Classroom Door</h2>
+          <h2 id="t_doorTitle">Simulated Classroom Door</h2>
           <span id="doorBadge" class="badge badge-locked">LOCKED</span>
         </div>
         <div class="door-visual-container">
@@ -61,46 +70,46 @@
           </div>
         </div>
         <div class="action-buttons">
-          <button class="btn btn-success" onclick="triggerDoor('unlock')">🔓 Remote UNLOCK (5s)</button>
-          <button class="btn btn-danger" onclick="triggerDoor('lock')">🔒 Remote LOCK</button>
+          <button class="btn btn-success" onclick="triggerDoor('unlock')">🔓 <span id="t_btnUnlock">Remote UNLOCK</span></button>
+          <button class="btn btn-danger" onclick="triggerDoor('lock')">🔒 <span id="t_btnLock">Remote LOCK</span></button>
         </div>
       </div>
 
       <!-- 2. Environmental & Safety Metrics Card -->
       <div class="card metrics-card">
         <div class="card-header">
-          <h2>Environment & Safety Sensors</h2>
-          <span id="safetyBadge" class="badge badge-safe">ALL SAFE</span>
+          <h2 id="t_sensorTitle">Environment & Safety Sensors</h2>
+          <span id="safetyBadge" class="badge badge-safe">SAFE</span>
         </div>
         <div class="metrics-grid">
           <div class="metric-box">
-            <span class="metric-title">TEMPERATURE</span>
+            <span class="metric-title" id="t_tempTitle">TEMPERATURE</span>
             <div class="metric-value-row">
               <span id="tempDisplay" class="metric-val">--</span>
               <span class="metric-unit">°C</span>
             </div>
-            <span class="metric-caption">DHT11 Sensor</span>
+            <span class="metric-caption" id="heatIndexDisplay">Feels like: -- °C</span>
           </div>
 
           <div class="metric-box">
-            <span class="metric-title">HUMIDITY</span>
+            <span class="metric-title" id="t_humTitle">HUMIDITY & TREND</span>
             <div class="metric-value-row">
               <span id="humDisplay" class="metric-val">--</span>
               <span class="metric-unit">%</span>
             </div>
-            <span class="metric-caption">Relative Humidity</span>
+            <span class="metric-caption" id="trendDisplay">Trend: STABLE</span>
           </div>
 
           <div class="metric-box">
-            <span class="metric-title">FLAME SENSOR</span>
+            <span class="metric-title" id="t_flameTitle">FLAME SENSOR</span>
             <div class="metric-value-row">
               <span id="flameDisplay" class="metric-val safe-text">SAFE</span>
             </div>
-            <span class="metric-caption">Active LOW (GPIO 21)</span>
+            <span class="metric-caption">2s Continuous Hold Rule</span>
           </div>
 
           <div class="metric-box">
-            <span class="metric-title">TOUCH PANIC PAD</span>
+            <span class="metric-title" id="t_panicTitle">TOUCH PANIC PAD</span>
             <div class="metric-value-row">
               <span id="panicDisplay" class="metric-val safe-text">NORMAL</span>
             </div>
@@ -109,49 +118,79 @@
         </div>
       </div>
 
-      <!-- 3. Room & Class Information Card -->
+      <!-- 3. Device Health Panel (Level 4 Task 4) -->
       <div class="card info-card">
         <div class="card-header">
-          <h2>Active Classroom Context</h2>
-          <span class="badge badge-info">Zero Hardcoding</span>
+          <h2 id="t_healthTitle">Device Health & Telemetry</h2>
+          <span class="badge badge-info font-mono">ESP32-S3</span>
         </div>
         <div class="info-list">
           <div class="info-row">
-            <span class="info-label">Assigned Room ID:</span>
+            <span class="info-label">Assigned Room:</span>
             <span id="roomIdDisplay" class="info-val font-mono">Room-101</span>
           </div>
           <div class="info-row">
-            <span class="info-label">Class Scheduled Time:</span>
-            <span id="classTimeDisplay" class="info-val font-mono">09:00 AM</span>
+            <span class="info-label">Wi-Fi Signal (RSSI):</span>
+            <span id="rssiDisplay" class="info-val font-mono">-58 dBm</span>
           </div>
           <div class="info-row">
-            <span class="info-label">Last Swiped RFID UID:</span>
-            <span id="rfidDisplay" class="info-val font-mono">None</span>
+            <span class="info-label">Free Heap / PSRAM:</span>
+            <span id="memDisplay" class="info-val font-mono">184 KB / 7104 KB</span>
           </div>
           <div class="info-row">
-            <span class="info-label">Controller & Camera:</span>
-            <span class="info-val">ESP32-S3-CAM (OV2640)</span>
+            <span class="info-label">Chip Temperature:</span>
+            <span id="chipTempDisplay" class="info-val font-mono">41.2 °C</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Firmware & Reset:</span>
+            <span id="fwDisplay" class="info-val font-mono">v1.0.0 (POWER_ON)</span>
           </div>
         </div>
       </div>
     </main>
 
+    <!-- AI Assistant & Quick Query Section (Level 6 Task 10) -->
+    <section class="card" style="margin-bottom:24px;">
+      <div class="card-header">
+        <h2>🤖 <span id="t_aiTitle">Smart Classroom AI Assistant</span></h2>
+        <span class="badge badge-info">Strict Fact-Based Engine</span>
+      </div>
+      <p style="font-size:0.85rem;color:#94a3b8;margin-bottom:12px;" id="t_aiDesc">
+        Ask questions in English or Bangla about today's temperature, alarms, or attendance.
+      </p>
+      <div style="display:flex;gap:10px;margin-bottom:10px;">
+        <input type="text" id="aiInput" style="flex:1;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.1);color:#fff;padding:10px 14px;border-radius:8px;" placeholder="e.g. আজকের সর্বোচ্চ তাপমাত্রা কত? / What is the highest temperature?">
+        <button class="btn btn-primary" onclick="askAiAssistant()">Ask</button>
+      </div>
+      <div id="aiResponseBox" style="background:rgba(0,0,0,0.25);padding:14px;border-radius:8px;font-size:0.9rem;color:#38bdf8;border:1px solid rgba(56,189,248,0.2);">
+        🤖 <em>Ask a question above or click a quick prompt below...</em>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+        <button class="btn btn-secondary" style="font-size:0.75rem;" onclick="quickAi('আজকের সর্বোচ্চ তাপমাত্রা কত?')">🌡️ আজকের সর্বোচ্চ তাপমাত্রা?</button>
+        <button class="btn btn-secondary" style="font-size:0.75rem;" onclick="quickAi('How many fire and panic alarms today?')">🚨 Alarms count?</button>
+        <button class="btn btn-secondary" style="font-size:0.75rem;" onclick="quickAi('Attendance status today?')">👥 Attendance status?</button>
+        <button class="btn btn-secondary" style="font-size:0.75rem;" onclick="quickAi('Temperature on 1995-01-01?')">❓ Non-existent date (Test "no data")</button>
+      </div>
+    </section>
+
     <!-- Audit History & Searchable Database Section -->
     <section class="history-section">
       <div class="history-header">
         <div>
-          <h2>Searchable Audit History & Event Records</h2>
-          <p class="history-subtitle">Tamper-evident log of all RFID attendance, safety alerts, and door transitions</p>
+          <h2 id="t_historyTitle">Searchable Audit History & Event Records</h2>
+          <p class="history-subtitle" id="t_historySub">Tamper-evident log of all RFID attendance, safety alerts, and door transitions</p>
         </div>
         <div class="history-filters">
           <input type="text" id="searchInput" placeholder="Search by UID, event, time..." oninput="debounceFetchEvents()">
           <select id="typeFilter" onchange="fetchEvents()">
             <option value="ALL">All Categories</option>
             <option value="ATTENDANCE">Attendance (RFID)</option>
-            <option value="FLAME_ALERT">Fire Alerts</option>
-            <option value="PANIC_ALERT">Panic Events</option>
-            <option value="REMOTE_COMMAND">Remote Commands</option>
+            <option value="CARD_TAP">Card Taps</option>
+            <option value="FIRE">Fire Alerts</option>
+            <option value="PANIC">Panic Events</option>
+            <option value="SETTINGS_APPLIED">Settings Applied</option>
           </select>
+          <a href="/api/export/csv" class="btn btn-secondary" style="text-decoration:none;">📥 CSV Export</a>
           <button class="btn btn-secondary" onclick="fetchEvents()">🔄 Refresh</button>
         </div>
       </div>
@@ -164,8 +203,8 @@
               <th>Category</th>
               <th>Event Details / Card UID</th>
               <th>Door State</th>
-              <th>Room ID</th>
-              <th>Source</th>
+              <th>Temperature</th>
+              <th>Status</th>
             </tr>
           </thead>
           <tbody id="eventsTableBody">
@@ -178,27 +217,36 @@
     </section>
   </div>
 
-  <!-- Dynamic Configuration Modal -->
-  <div id="configModal" class="modal-backdrop hidden">
+  <!-- Role Login Modal (Level 4: Roles, Password Hashing & Lockout) -->
+  <div id="loginModal" class="modal-backdrop hidden">
     <div class="modal-box">
       <div class="modal-header">
-        <h3>Dynamic Room Configuration</h3>
-        <button class="modal-close-btn" onclick="closeConfigModal()">✕</button>
+        <h3 id="t_loginHeader">Account Login & Role Switching</h3>
+        <button class="modal-close-btn" onclick="closeLoginModal()">✕</button>
       </div>
       <div class="modal-body">
-        <p class="modal-desc">Configure on-the-spot test values assigned by judges without changing firmware code.</p>
+        <p class="modal-desc" id="t_loginDesc">Select one of the 4 competition test accounts or enter credentials:</p>
+        
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
+          <button class="btn btn-secondary" style="font-size:0.8rem;" onclick="prefillLogin('admin','admin123')">🔑 Admin</button>
+          <button class="btn btn-secondary" style="font-size:0.8rem;" onclick="prefillLogin('teacher','teach123')">👨‍🏫 Teacher</button>
+          <button class="btn btn-secondary" style="font-size:0.8rem;" onclick="prefillLogin('student1','stud123')">🎓 Student S1</button>
+          <button class="btn btn-secondary" style="font-size:0.8rem;" onclick="prefillLogin('guardian','guard123')">👪 Guardian (S1)</button>
+        </div>
+
         <div class="form-group">
-          <label>Room Identifier (Room ID)</label>
-          <input type="text" id="configRoomId" placeholder="e.g. Lab-302, Hall-A">
+          <label>Username</label>
+          <input type="text" id="loginUsername" placeholder="Username">
         </div>
         <div class="form-group">
-          <label>Class Scheduled Time</label>
-          <input type="time" id="configClassTime">
+          <label>Password</label>
+          <input type="password" id="loginPassword" placeholder="Password">
         </div>
+        <div id="loginErrorMsg" style="color:#ef4444;font-size:0.82rem;margin-top:6px;display:none;"></div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" onclick="closeConfigModal()">Cancel</button>
-        <button class="btn btn-primary" onclick="saveConfiguration()">Save Changes</button>
+        <button class="btn btn-secondary" onclick="closeLoginModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="performLogin()">Login</button>
       </div>
     </div>
   </div>
@@ -206,4 +254,3 @@
   <script src="app.js"></script>
 </body>
 </html>
-
