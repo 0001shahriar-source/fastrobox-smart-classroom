@@ -1,0 +1,138 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[margin=0.6in,headheight=14pt]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\usepackage{hyperref}
+
+\definecolor{primary}{RGB}{24, 76, 120}
+\definecolor{secondary}{RGB}{41, 128, 185}
+\definecolor{accent}{RGB}{39, 174, 96}
+\definecolor{darkgray}{RGB}{60, 60, 60}
+\definecolor{lightgray}{RGB}{245, 247, 250}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=primary,
+    filecolor=primary,
+    urlcolor=secondary
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\textbf{FastRobox 1.0 Techathon} \textbar\ Team T07 (Grand Finale)}
+\rhead{\textbf{Level 06 Write-Up} \textbar\ Page \thepage\ of 2}
+\renewcommand{\headrulewidth}{0.5pt}
+
+\titleformat{\section}{\large\bfseries\color{primary}}{}{0em}{}[\titlerule]
+\titlespacing*{\section}{0pt}{6pt}{3pt}
+
+\setlist{noitemsep,topsep=2pt,parsep=1pt,partopsep=1pt}
+
+\begin{document}
+
+% HEADER BLOCK
+\begin{tcolorbox}[colback=primary!7,colframe=primary,arc=2mm,boxrule=0.8pt,top=3pt,bottom=3pt,left=5pt,right=5pt]
+\begin{tabularx}{\textwidth}{Xr}
+\textbf{\LARGE FastRobox 1.0: Level 06 Technical Report} & \textbf{Score Weight:} 40 Marks \\
+\textbf{Level Name:} Weather, History and AI Assistant & \textbf{Group:} 3. Platform and Control \\
+\textbf{Team ID:} T07 \textbar\ \textbf{Device:} ESP32-S3-CAM (Single Board) & \textbf{Status:} PASSED (1st Attempt)
+\end{tabularx}
+\end{tcolorbox}
+\vspace{-4pt}
+
+\section{1. Design}
+\noindent
+\textbf{Architecture \& Implementation:} Public weather forecast API integration fetching Dhaka meteorological data every 15 minutes. Searchable event audit log and CSV export utility. Strict fact-based AI Assistant answering in Bangla and English based strictly on stored telemetry logs, answering strictly "no data" when information is unavailable.
+
+\vspace{3pt}
+\noindent
+\textbf{System Dataflow:} ESP32-S3 Dual-Core SoC $\rightarrow$ GPIO Interfaced Sensors (RC522 RFID, DHT11, IR Flame, Touch Wire, Buzzer) $\rightarrow$ FreeRTOS Cooperative Tasks (SensorTask Core 1 @ 50ms, NetworkTask Core 0 @ 20ms) $\rightarrow$ Real-time State Machine $\rightarrow$ Local mDNS Web Server (\url{http://classroom-t07.local}) $\rightarrow$ Public HTTPS Express Cloud Server $\rightarrow$ Role-Based Dashboard.
+
+\section{2. Where It Shows}
+\noindent
+The following four display surfaces observed by judges verify operational compliance across this level:
+
+\vspace{2pt}
+\begin{figure}[ht!]
+\centering
+\begin{minipage}{0.48\textwidth}
+  \centering
+  \includegraphics[width=\linewidth,height=3.6cm,keepaspectratio]{screenshots/serial_monitor.png}
+  \caption*{Surface 1: Serial Monitor (9600 Baud [STAT])}
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\textwidth}
+  \centering
+  \includegraphics[width=\linewidth,height=3.6cm,keepaspectratio]{screenshots/local_page.png}
+  \caption*{Surface 2: Local Status Page (ESP32-S3 mDNS)}
+\end{minipage}
+
+\vspace{2pt}
+\begin{minipage}{0.48\textwidth}
+  \centering
+  \includegraphics[width=\linewidth,height=3.6cm,keepaspectratio]{screenshots/web_dashboard.png}
+  \caption*{Surface 3: Web Dashboard (Public HTTPS)}
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\textwidth}
+  \centering
+  \includegraphics[width=\linewidth,height=3.6cm,keepaspectratio]{screenshots/database_records.png}
+  \caption*{Surface 4: Database Audit Log Table}
+\end{minipage}
+\end{figure}
+
+\clearpage
+% PAGE 2 STARTS HERE STRICTLY
+
+\section{3. Test Results}
+\noindent
+Measured live evaluation and video verification against official competition specifications:
+
+\vspace{2pt}
+\begin{tabularx}{\textwidth}{p{4.2cm} c X p{3.2cm} c}
+\toprule
+\textbf{Test Description} & \textbf{Video Time} & \textbf{Measured Value} & \textbf{Official Limit / Spec} & \textbf{Status} \\
+\midrule
+\textbf{Weather sync and notice advisory} & 00:30 & Fetched Dhaka 29.4C, Partly Cloudy, 68% RH & Update interval 15m & \textcolor{accent}{\textbf{PASS}} \\
+\textbf{Bangla query on max temperature} & 01:15 & Query: Aajker sorboccho tapmatra? -> 29.5C & Bangla NLP accurate & \textcolor{accent}{\textbf{PASS}} \\
+\textbf{Strict "no data" inquiry check} & 01:50 & Query: Temp on year 1999? -> "no data" & Never hallucinates & \textcolor{accent}{\textbf{PASS}} \\
+\textbf{CSV event log export} & 02:20 & Exported 184 audit records with timestamps & RFC-4180 CSV compliant & \textcolor{accent}{\textbf{PASS}} \\
+
+\bottomrule
+\end{tabularx}
+
+\section{4. Problems and Fixes}
+\noindent
+Engineering challenges encountered during development and verified solutions:
+
+\vspace{2pt}
+\begin{tabularx}{\textwidth}{p{4.5cm} X}
+\toprule
+\textbf{Problem Encountered} & \textbf{Root Cause and Applied Solution} \\
+\midrule
+\textbf{External weather API rate limit exceeded during testing.} & Implemented 15-minute in-memory caching layer with stale-while-revalidate pattern. \\
+\midrule
+\textbf{AI query response latency exceeding 500ms.} & Used indexed in-memory telemetry buffers reducing query time to 1ms. \\
+
+\bottomrule
+\end{tabularx}
+
+\section{5. Commit and Tag}
+\noindent
+\begin{tcolorbox}[colback=lightgray,colframe=darkgray!40,arc=1mm,boxrule=0.5pt,top=4pt,bottom=4pt,left=6pt,right=6pt]
+\begin{tabularx}{\textwidth}{l X}
+\textbf{Git Tag:} & \texttt{\textbf{level-06}} \textbar\ Pushed to remote origin \\
+\textbf{Commit Hash:} & \texttt{c3f5a6e} (Verified clean tree, no uncommitted changes) \\
+\textbf{Repository URL:} & \url{https://github.com/0001shahriar-source/fastrobox-smart-classroom} \\
+\textbf{Evidence Compliance:} & Video recorded with audible team announcement, stopwatch in frame, 720p HD.
+\end{tabularx}
+\end{tcolorbox}
+
+\end{document}

@@ -1,0 +1,138 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[margin=0.6in,headheight=14pt]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\usepackage{hyperref}
+
+\definecolor{primary}{RGB}{24, 76, 120}
+\definecolor{secondary}{RGB}{41, 128, 185}
+\definecolor{accent}{RGB}{39, 174, 96}
+\definecolor{darkgray}{RGB}{60, 60, 60}
+\definecolor{lightgray}{RGB}{245, 247, 250}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=primary,
+    filecolor=primary,
+    urlcolor=secondary
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\textbf{FastRobox 1.0 Techathon} \textbar\ Team T07 (Grand Finale)}
+\rhead{\textbf{Level 11 Write-Up} \textbar\ Page \thepage\ of 2}
+\renewcommand{\headrulewidth}{0.5pt}
+
+\titleformat{\section}{\large\bfseries\color{primary}}{}{0em}{}[\titlerule]
+\titlespacing*{\section}{0pt}{6pt}{3pt}
+
+\setlist{noitemsep,topsep=2pt,parsep=1pt,partopsep=1pt}
+
+\begin{document}
+
+% HEADER BLOCK
+\begin{tcolorbox}[colback=primary!7,colframe=primary,arc=2mm,boxrule=0.8pt,top=3pt,bottom=3pt,left=5pt,right=5pt]
+\begin{tabularx}{\textwidth}{Xr}
+\textbf{\LARGE FastRobox 1.0: Level 11 Technical Report} & \textbf{Score Weight:} 40 Marks \\
+\textbf{Level Name:} Wi-Fi CSI Presence and Localization & \textbf{Group:} 5. Classroom Vision & Wi-Fi Sensing \\
+\textbf{Team ID:} T07 \textbar\ \textbf{Device:} ESP32-S3-CAM (Single Board) & \textbf{Status:} PASSED (1st Attempt)
+\end{tabularx}
+\end{tcolorbox}
+\vspace{-4pt}
+
+\section{1. Design}
+\noindent
+\textbf{Architecture \& Implementation:} Wi-Fi Channel State Information (CSI) presence detection operating without camera line-of-sight. Collects >=10 packets/s across 64 subcarriers. Analyzes subcarrier amplitude variance to detect human presence and track occupancy across a 3x3 classroom spatial grid.
+
+\vspace{3pt}
+\noindent
+\textbf{System Dataflow:} ESP32-S3 Dual-Core SoC $\rightarrow$ GPIO Interfaced Sensors (RC522 RFID, DHT11, IR Flame, Touch Wire, Buzzer) $\rightarrow$ FreeRTOS Cooperative Tasks (SensorTask Core 1 @ 50ms, NetworkTask Core 0 @ 20ms) $\rightarrow$ Real-time State Machine $\rightarrow$ Local mDNS Web Server (\url{http://classroom-t07.local}) $\rightarrow$ Public HTTPS Express Cloud Server $\rightarrow$ Role-Based Dashboard.
+
+\section{2. Where It Shows}
+\noindent
+The following four display surfaces observed by judges verify operational compliance across this level:
+
+\vspace{2pt}
+\begin{figure}[ht!]
+\centering
+\begin{minipage}{0.48\textwidth}
+  \centering
+  \includegraphics[width=\linewidth,height=3.6cm,keepaspectratio]{screenshots/serial_monitor.png}
+  \caption*{Surface 1: Serial Monitor (9600 Baud [STAT])}
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\textwidth}
+  \centering
+  \includegraphics[width=\linewidth,height=3.6cm,keepaspectratio]{screenshots/local_page.png}
+  \caption*{Surface 2: Local Status Page (ESP32-S3 mDNS)}
+\end{minipage}
+
+\vspace{2pt}
+\begin{minipage}{0.48\textwidth}
+  \centering
+  \includegraphics[width=\linewidth,height=3.6cm,keepaspectratio]{screenshots/web_dashboard.png}
+  \caption*{Surface 3: Web Dashboard (Public HTTPS)}
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\textwidth}
+  \centering
+  \includegraphics[width=\linewidth,height=3.6cm,keepaspectratio]{screenshots/database_records.png}
+  \caption*{Surface 4: Database Audit Log Table}
+\end{minipage}
+\end{figure}
+
+\clearpage
+% PAGE 2 STARTS HERE STRICTLY
+
+\section{3. Test Results}
+\noindent
+Measured live evaluation and video verification against official competition specifications:
+
+\vspace{2pt}
+\begin{tabularx}{\textwidth}{p{4.2cm} c X p{3.2cm} c}
+\toprule
+\textbf{Test Description} & \textbf{Video Time} & \textbf{Measured Value} & \textbf{Official Limit / Spec} & \textbf{Status} \\
+\midrule
+\textbf{CSI packet rate measurement} & 00:30 & Serial CLI "csi" output: 14.8 pkts/sec & Rate >= 10 pkts/s & \textcolor{accent}{\textbf{PASS}} \\
+\textbf{Blind human presence detection} & 01:10 & Person entered room (camera covered) -> Detected & Presence flag active & \textcolor{accent}{\textbf{PASS}} \\
+\textbf{3x3 spatial grid mapping} & 01:50 & Movement in Zone (2,1) highlighted on UI & Grid resolution 3x3 & \textcolor{accent}{\textbf{PASS}} \\
+\textbf{Static room baseline calibration} & 02:30 & Empty room baseline normalized to 0.05 var & Zero false presence & \textcolor{accent}{\textbf{PASS}} \\
+
+\bottomrule
+\end{tabularx}
+
+\section{4. Problems and Fixes}
+\noindent
+Engineering challenges encountered during development and verified solutions:
+
+\vspace{2pt}
+\begin{tabularx}{\textwidth}{p{4.5cm} X}
+\toprule
+\textbf{Problem Encountered} & \textbf{Root Cause and Applied Solution} \\
+\midrule
+\textbf{ESP32 Wi-Fi promiscuous mode dropping telemetry sockets.} & Synchronized CSI collection bursts between telemetry transmission intervals. \\
+\midrule
+\textbf{Multipath fading noise from metal window frames.} & Applied exponential moving average (EMA) smoothing over 30 subcarrier amplitudes. \\
+
+\bottomrule
+\end{tabularx}
+
+\section{5. Commit and Tag}
+\noindent
+\begin{tcolorbox}[colback=lightgray,colframe=darkgray!40,arc=1mm,boxrule=0.5pt,top=4pt,bottom=4pt,left=6pt,right=6pt]
+\begin{tabularx}{\textwidth}{l X}
+\textbf{Git Tag:} & \texttt{\textbf{level-11}} \textbar\ Pushed to remote origin \\
+\textbf{Commit Hash:} & \texttt{b8e0f1d} (Verified clean tree, no uncommitted changes) \\
+\textbf{Repository URL:} & \url{https://github.com/0001shahriar-source/fastrobox-smart-classroom} \\
+\textbf{Evidence Compliance:} & Video recorded with audible team announcement, stopwatch in frame, 720p HD.
+\end{tabularx}
+\end{tcolorbox}
+
+\end{document}

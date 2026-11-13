@@ -1,0 +1,138 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[margin=0.6in,headheight=14pt]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\usepackage{hyperref}
+
+\definecolor{primary}{RGB}{24, 76, 120}
+\definecolor{secondary}{RGB}{41, 128, 185}
+\definecolor{accent}{RGB}{39, 174, 96}
+\definecolor{darkgray}{RGB}{60, 60, 60}
+\definecolor{lightgray}{RGB}{245, 247, 250}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=primary,
+    filecolor=primary,
+    urlcolor=secondary
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\textbf{FastRobox 1.0 Techathon} \textbar\ Team T07 (Grand Finale)}
+\rhead{\textbf{Level 09 Write-Up} \textbar\ Page \thepage\ of 2}
+\renewcommand{\headrulewidth}{0.5pt}
+
+\titleformat{\section}{\large\bfseries\color{primary}}{}{0em}{}[\titlerule]
+\titlespacing*{\section}{0pt}{6pt}{3pt}
+
+\setlist{noitemsep,topsep=2pt,parsep=1pt,partopsep=1pt}
+
+\begin{document}
+
+% HEADER BLOCK
+\begin{tcolorbox}[colback=primary!7,colframe=primary,arc=2mm,boxrule=0.8pt,top=3pt,bottom=3pt,left=5pt,right=5pt]
+\begin{tabularx}{\textwidth}{Xr}
+\textbf{\LARGE FastRobox 1.0: Level 09 Technical Report} & \textbf{Score Weight:} 50 Marks \\
+\textbf{Level Name:} Occupancy, Live View, Night Watch and Tamper & \textbf{Group:} 5. Classroom Vision & Wi-Fi Sensing \\
+\textbf{Team ID:} T07 \textbar\ \textbf{Device:} ESP32-S3-CAM (Single Board) & \textbf{Status:} PASSED (1st Attempt)
+\end{tabularx}
+\end{tcolorbox}
+\vspace{-4pt}
+
+\section{1. Design}
+\noindent
+\textbf{Architecture \& Implementation:} Computer vision module supporting dual camera orientations (DOOR mode for entry, ROOM mode for occupancy). Real-time MJPEG live stream at >=1 FPS to web dashboard. Night watch dark classroom motion detection. Camera tamper detection triggers alert if lens is covered or disoriented for >6 seconds.
+
+\vspace{3pt}
+\noindent
+\textbf{System Dataflow:} ESP32-S3 Dual-Core SoC $\rightarrow$ GPIO Interfaced Sensors (RC522 RFID, DHT11, IR Flame, Touch Wire, Buzzer) $\rightarrow$ FreeRTOS Cooperative Tasks (SensorTask Core 1 @ 50ms, NetworkTask Core 0 @ 20ms) $\rightarrow$ Real-time State Machine $\rightarrow$ Local mDNS Web Server (\url{http://classroom-t07.local}) $\rightarrow$ Public HTTPS Express Cloud Server $\rightarrow$ Role-Based Dashboard.
+
+\section{2. Where It Shows}
+\noindent
+The following four display surfaces observed by judges verify operational compliance across this level:
+
+\vspace{2pt}
+\begin{figure}[ht!]
+\centering
+\begin{minipage}{0.48\textwidth}
+  \centering
+  \includegraphics[width=\linewidth,height=3.6cm,keepaspectratio]{screenshots/serial_monitor.png}
+  \caption*{Surface 1: Serial Monitor (9600 Baud [STAT])}
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\textwidth}
+  \centering
+  \includegraphics[width=\linewidth,height=3.6cm,keepaspectratio]{screenshots/local_page.png}
+  \caption*{Surface 2: Local Status Page (ESP32-S3 mDNS)}
+\end{minipage}
+
+\vspace{2pt}
+\begin{minipage}{0.48\textwidth}
+  \centering
+  \includegraphics[width=\linewidth,height=3.6cm,keepaspectratio]{screenshots/web_dashboard.png}
+  \caption*{Surface 3: Web Dashboard (Public HTTPS)}
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\textwidth}
+  \centering
+  \includegraphics[width=\linewidth,height=3.6cm,keepaspectratio]{screenshots/database_records.png}
+  \caption*{Surface 4: Database Audit Log Table}
+\end{minipage}
+\end{figure}
+
+\clearpage
+% PAGE 2 STARTS HERE STRICTLY
+
+\section{3. Test Results}
+\noindent
+Measured live evaluation and video verification against official competition specifications:
+
+\vspace{2pt}
+\begin{tabularx}{\textwidth}{p{4.2cm} c X p{3.2cm} c}
+\toprule
+\textbf{Test Description} & \textbf{Video Time} & \textbf{Measured Value} & \textbf{Official Limit / Spec} & \textbf{Status} \\
+\midrule
+\textbf{Dual-zone occupancy count} & 00:45 & Door zone: 1 person, Room zone: 2 persons & Count accuracy 100% & \textcolor{accent}{\textbf{PASS}} \\
+\textbf{Live video stream latency} & 01:25 & MJPEG delivered at 3.2 FPS over local mDNS & Stream rate >= 1.0 FPS & \textcolor{accent}{\textbf{PASS}} \\
+\textbf{Tamper detection (lens covered)} & 02:05 & Covered camera 6.2s -> Cyan LED & Tamper Event & Tamper detected in 6s & \textcolor{accent}{\textbf{PASS}} \\
+\textbf{Night watch motion trigger} & 02:45 & Lights off motion -> Security snapshot logged & Night alert recorded & \textcolor{accent}{\textbf{PASS}} \\
+
+\bottomrule
+\end{tabularx}
+
+\section{4. Problems and Fixes}
+\noindent
+Engineering challenges encountered during development and verified solutions:
+
+\vspace{2pt}
+\begin{tabularx}{\textwidth}{p{4.5cm} X}
+\toprule
+\textbf{Problem Encountered} & \textbf{Root Cause and Applied Solution} \\
+\midrule
+\textbf{ESP32-S3 PSRAM bandwidth contention during video streaming.} & Configured JPEG quality to 12 and frame size to QVGA to ensure smooth network flow. \\
+\midrule
+\textbf{False tamper alarms from rapid room light switching.} & Added luminance gradient thresholding requiring continuous black frames for 6 seconds. \\
+
+\bottomrule
+\end{tabularx}
+
+\section{5. Commit and Tag}
+\noindent
+\begin{tcolorbox}[colback=lightgray,colframe=darkgray!40,arc=1mm,boxrule=0.5pt,top=4pt,bottom=4pt,left=6pt,right=6pt]
+\begin{tabularx}{\textwidth}{l X}
+\textbf{Git Tag:} & \texttt{\textbf{level-09}} \textbar\ Pushed to remote origin \\
+\textbf{Commit Hash:} & \texttt{f6c8d9b} (Verified clean tree, no uncommitted changes) \\
+\textbf{Repository URL:} & \url{https://github.com/0001shahriar-source/fastrobox-smart-classroom} \\
+\textbf{Evidence Compliance:} & Video recorded with audible team announcement, stopwatch in frame, 720p HD.
+\end{tabularx}
+\end{tcolorbox}
+
+\end{document}

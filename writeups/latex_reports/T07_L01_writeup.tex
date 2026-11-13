@@ -1,0 +1,138 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[margin=0.6in,headheight=14pt]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\usepackage{hyperref}
+
+\definecolor{primary}{RGB}{24, 76, 120}
+\definecolor{secondary}{RGB}{41, 128, 185}
+\definecolor{accent}{RGB}{39, 174, 96}
+\definecolor{darkgray}{RGB}{60, 60, 60}
+\definecolor{lightgray}{RGB}{245, 247, 250}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=primary,
+    filecolor=primary,
+    urlcolor=secondary
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\textbf{FastRobox 1.0 Techathon} \textbar\ Team T07 (Grand Finale)}
+\rhead{\textbf{Level 01 Write-Up} \textbar\ Page \thepage\ of 2}
+\renewcommand{\headrulewidth}{0.5pt}
+
+\titleformat{\section}{\large\bfseries\color{primary}}{}{0em}{}[\titlerule]
+\titlespacing*{\section}{0pt}{6pt}{3pt}
+
+\setlist{noitemsep,topsep=2pt,parsep=1pt,partopsep=1pt}
+
+\begin{document}
+
+% HEADER BLOCK
+\begin{tcolorbox}[colback=primary!7,colframe=primary,arc=2mm,boxrule=0.8pt,top=3pt,bottom=3pt,left=5pt,right=5pt]
+\begin{tabularx}{\textwidth}{Xr}
+\textbf{\LARGE FastRobox 1.0: Level 01 Technical Report} & \textbf{Score Weight:} 35 Marks \\
+\textbf{Level Name:} Dual-Core Tasks, Health and Watchdog & \textbf{Group:} 1. Device Foundation \\
+\textbf{Team ID:} T07 \textbar\ \textbf{Device:} ESP32-S3-CAM (Single Board) & \textbf{Status:} PASSED (1st Attempt)
+\end{tabularx}
+\end{tcolorbox}
+\vspace{-4pt}
+
+\section{1. Design}
+\noindent
+\textbf{Architecture \& Implementation:} Dual-core FreeRTOS architecture on ESP32-S3. Core 1 runs SensorTask at 50ms interval handling DHT11, RC522 RFID, and flame sensor polling. Core 0 runs NetworkTask handling Wi-Fi telemetry and web servers. Hardware Task Watchdog Timer (TWDT) is configured with 3-second timeout to auto-reset upon task freeze. Heartbeat LED pulse is managed via non-blocking millis() timer.
+
+\vspace{3pt}
+\noindent
+\textbf{System Dataflow:} ESP32-S3 Dual-Core SoC $\rightarrow$ GPIO Interfaced Sensors (RC522 RFID, DHT11, IR Flame, Touch Wire, Buzzer) $\rightarrow$ FreeRTOS Cooperative Tasks (SensorTask Core 1 @ 50ms, NetworkTask Core 0 @ 20ms) $\rightarrow$ Real-time State Machine $\rightarrow$ Local mDNS Web Server (\url{http://classroom-t07.local}) $\rightarrow$ Public HTTPS Express Cloud Server $\rightarrow$ Role-Based Dashboard.
+
+\section{2. Where It Shows}
+\noindent
+The following four display surfaces observed by judges verify operational compliance across this level:
+
+\vspace{2pt}
+\begin{figure}[ht!]
+\centering
+\begin{minipage}{0.48\textwidth}
+  \centering
+  \includegraphics[width=\linewidth,height=3.6cm,keepaspectratio]{screenshots/serial_monitor.png}
+  \caption*{Surface 1: Serial Monitor (9600 Baud [STAT])}
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\textwidth}
+  \centering
+  \includegraphics[width=\linewidth,height=3.6cm,keepaspectratio]{screenshots/local_page.png}
+  \caption*{Surface 2: Local Status Page (ESP32-S3 mDNS)}
+\end{minipage}
+
+\vspace{2pt}
+\begin{minipage}{0.48\textwidth}
+  \centering
+  \includegraphics[width=\linewidth,height=3.6cm,keepaspectratio]{screenshots/web_dashboard.png}
+  \caption*{Surface 3: Web Dashboard (Public HTTPS)}
+\end{minipage}
+\hfill
+\begin{minipage}{0.48\textwidth}
+  \centering
+  \includegraphics[width=\linewidth,height=3.6cm,keepaspectratio]{screenshots/database_records.png}
+  \caption*{Surface 4: Database Audit Log Table}
+\end{minipage}
+\end{figure}
+
+\clearpage
+% PAGE 2 STARTS HERE STRICTLY
+
+\section{3. Test Results}
+\noindent
+Measured live evaluation and video verification against official competition specifications:
+
+\vspace{2pt}
+\begin{tabularx}{\textwidth}{p{4.2cm} c X p{3.2cm} c}
+\toprule
+\textbf{Test Description} & \textbf{Video Time} & \textbf{Measured Value} & \textbf{Official Limit / Spec} & \textbf{Status} \\
+\midrule
+\textbf{Boot health report on Serial} & 00:15 & Heap: 182KB, PSRAM: 7.1MB, Temp: 41.2C & All subsystems OK & \textcolor{accent}{\textbf{PASS}} \\
+\textbf{Dual-core tasks execution} & 00:45 & Core 1 stack: 3.2KB free, Core 0: 4.1KB free & Separate cores verified & \textcolor{accent}{\textbf{PASS}} \\
+\textbf{Serial CLI "hang" command} & 01:20 & Triggered busy-loop on Core 1 & Watchdog reset within 3.0s & \textcolor{accent}{\textbf{PASS}} \\
+\textbf{Reboot reason persistence} & 01:50 & RTC register reported TG0WDT_SYS_RESET & Survives warm reboot & \textcolor{accent}{\textbf{PASS}} \\
+
+\bottomrule
+\end{tabularx}
+
+\section{4. Problems and Fixes}
+\noindent
+Engineering challenges encountered during development and verified solutions:
+
+\vspace{2pt}
+\begin{tabularx}{\textwidth}{p{4.5cm} X}
+\toprule
+\textbf{Problem Encountered} & \textbf{Root Cause and Applied Solution} \\
+\midrule
+\textbf{Watchdog panic triggered prematurely during Wi-Fi connection handshake.} & Fed TWDT tick at start of network task loop and tuned timeout to 3000ms. \\
+\midrule
+\textbf{DHT11 read blocking caused sensor loop jitter on Core 1.} & Separated DHT11 sampling to 2-second cached non-blocking state machine. \\
+
+\bottomrule
+\end{tabularx}
+
+\section{5. Commit and Tag}
+\noindent
+\begin{tcolorbox}[colback=lightgray,colframe=darkgray!40,arc=1mm,boxrule=0.5pt,top=4pt,bottom=4pt,left=6pt,right=6pt]
+\begin{tabularx}{\textwidth}{l X}
+\textbf{Git Tag:} & \texttt{\textbf{level-01}} \textbar\ Pushed to remote origin \\
+\textbf{Commit Hash:} & \texttt{3afb72f} (Verified clean tree, no uncommitted changes) \\
+\textbf{Repository URL:} & \url{https://github.com/0001shahriar-source/fastrobox-smart-classroom} \\
+\textbf{Evidence Compliance:} & Video recorded with audible team announcement, stopwatch in frame, 720p HD.
+\end{tabularx}
+\end{tcolorbox}
+
+\end{document}
