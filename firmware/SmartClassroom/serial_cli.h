@@ -75,6 +75,13 @@ public:
       Serial.println(F("[CMD]   csi     - Wi-Fi CSI packet rate, subcarriers, channel (Level 11)"));
       Serial.println(F("[CMD]   Dynamic setters: SET_WIFI:<ssid>,<pass>, SET_ROOM:<id>, SET_TIME:<HH:MM>, SET_TEMP:<thresh>, SET_DOOR_TIME:<sec>"));
     }
+    else if (cmd.equalsIgnoreCase("beep")) {
+      Serial.println(F("[CMD] Testing Buzzer on GPIO 47..."));
+      digitalWrite(BUZZER_PIN, HIGH);
+      delay(500);
+      digitalWrite(BUZZER_PIN, LOW);
+      Serial.println(F("[CMD] Beep test complete."));
+    }
     else if (cmd.equalsIgnoreCase("status")) {
       printStatusLine();
     }
